@@ -1,0 +1,65 @@
+$colors: () !default;
+$colors: map-merge(
+  (
+    dark-1: #000000,
+    dark-2: #0f0f0f,
+    light-1: #ffffff,
+    light-2: #ffffff33,
+  ),
+  $colors
+);
+
+@mixin text-hzn($parent, $color) {
+  #{$parent} {
+    color: $color;
+  }
+  #{$parent}-i {
+    color: $color !important;
+  }
+}
+
+// backgrounds mixin
+@mixin background-hzn($parent, $color) {
+  #{$parent} {
+    background: $color;
+  }
+  #{$parent}-i {
+    background: $color !important;
+  }
+}
+
+// border-color mixin
+@mixin border-hzn($parent, $color) {
+  #{$parent} {
+    border-color: $color;
+  }
+  #{$parent}-i {
+    border-color: $color !important;
+  }
+}
+
+// text color classes mapping
+@each $color, $value in $colors {
+  @include text-hzn(".text-hzn-#{$color}", $value);
+}
+
+// background color classes mapping
+@each $color, $value in $colors {
+  @include background-hzn(".background-hzn-#{$color}", $value);
+}
+
+// border color classes mapping
+@each $color, $value in $colors {
+  @include border-hzn(".border-hzn-#{$color}", $value);
+}
+
+@mixin create-css-variable($key, $value) {
+  #{--#{$key}}: $value;
+}
+
+// This creates css varaibles
+:root {
+  @each $color, $value in $colors {
+    @include create-css-variable($color, $value);
+  }
+}
