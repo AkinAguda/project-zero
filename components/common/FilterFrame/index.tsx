@@ -1,9 +1,16 @@
-import { useRef } from "react";
+import { useEffect } from "react";
+import { useFilterFrame } from "./hooks";
 import { FilterFrameContainerProps } from "./types";
 import FilterFrame from "./FilterFrame";
 
-const FilterFrameontainer: React.FC<FilterFrameContainerProps> = () => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+const FilterFrameontainer: React.FC<FilterFrameContainerProps> = ({
+  imageUrl,
+  filter,
+}) => {
+  const { canvasRef, renderFrame } = useFilterFrame(filter);
+  useEffect(() => {
+    renderFrame(imageUrl);
+  }, [renderFrame, imageUrl]);
   return <FilterFrame canvasRef={canvasRef} />;
 };
 

@@ -8,14 +8,16 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@hzn/common": "./components/common",
+    "@hzn/svgs": "./svgs",
+    "@hzn/utils": "./utils",
     "next": "12.0.4",
     "react": "17.0.2",
     "react-dom": "17.0.2",
-    "sass": "^1.43.4",
-    "@hzn/common": "./components/common",
-    "@hzn/utils": "./utils"
+    "sass": "^1.43.4"
   },
   "devDependencies": {
+    "@svgr/webpack": "^5.5.0",
     "@types/node": "16.11.7",
     "@types/react": "17.0.35",
     "eslint": "7.32.0",

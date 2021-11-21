@@ -8,6 +8,7 @@ export interface FilterFrameContainerProps
     HTMLCanvasElement
   > {
   filter: filterTypes;
+  imageUrl: string;
 }
 
 export interface FilterFrameViewProps {

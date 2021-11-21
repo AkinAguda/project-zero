@@ -1,0 +1,13 @@
+.container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+  gap: 20px;
+  & > * {
+    height: 500px;
+    width: 250px;
+    border: 1px solid red;
+    border-radius: 12px;
+  }
+}
