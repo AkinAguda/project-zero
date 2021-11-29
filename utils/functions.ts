@@ -85,3 +85,65 @@ export const m3 = {
     ];
   },
 };
+
+/**
+ * This function splits a rectangle into triangles
+ * @param height
+ * @param width
+ * @param hCount
+ * @param wCount
+ * @returns
+ */
+export const getTriangularVertices = (
+  height: number,
+  width: number,
+  hCount: number,
+  wCount: number
+) => {
+  const vertices: number[] = [];
+  const boxWidth = width / wCount;
+  const boxHeight = height / hCount;
+
+  const boxWidthHalf = boxWidth / 2;
+  const boxHeightHalf = boxHeight / 2;
+
+  let pointIndex = 0;
+
+  for (let i = 0; i < hCount; i++) {
+    for (let j = 0; j < wCount; j++) {
+      const center = [
+        boxWidthHalf * 2 * j + boxWidthHalf,
+        boxHeightHalf * 2 * i + boxHeightHalf,
+      ];
+
+      // vertices[pointIndex] = center[0] - boxWidthHalf;
+      // vertices[pointIndex + 1] = center[0] - boxHeightHalf;
+
+      vertices[pointIndex] = center[0] - boxWidthHalf;
+      vertices[pointIndex + 1] = center[1] - boxHeightHalf;
+
+      // Vertex 2 coords
+      vertices[pointIndex + 2] = center[0] + boxWidthHalf;
+      vertices[pointIndex + 3] = center[1] - boxHeightHalf;
+
+      // Vertex 3 coords
+      vertices[pointIndex + 4] = center[0] - boxWidthHalf;
+      vertices[pointIndex + 5] = center[1] + boxHeightHalf;
+
+      // Vertex 4 coords
+      vertices[pointIndex + 6] = center[0] - boxWidthHalf;
+      vertices[pointIndex + 7] = center[1] + boxHeightHalf;
+
+      // Vertex 5 coords
+      vertices[pointIndex + 8] = center[0] + boxWidthHalf;
+      vertices[pointIndex + 9] = center[1] - boxHeightHalf;
+
+      // Vertex 6 coords
+      vertices[pointIndex + 10] = center[0] + boxWidthHalf;
+      vertices[pointIndex + 11] = center[1] + boxHeightHalf;
+
+      pointIndex += 12;
+    }
+  }
+  return vertices;
+};
