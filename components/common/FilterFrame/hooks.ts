@@ -23,6 +23,8 @@ export const useFilterFrame = (selectedFilter: filterTypes) => {
       const [image, error] = await loadImage(imageUrl);
       const gl = canvasRef.current?.getContext("webgl");
       if (image && gl) {
+        const dpr = window.devicePixelRatio;
+
         // Setting a local canvas variable
         const canvas = canvasRef.current!;
         // Resizing rendering context
@@ -54,7 +56,7 @@ export const useFilterFrame = (selectedFilter: filterTypes) => {
         }
 
         void main() {
-            gl_Position = vec4(a_position, 0, 1);
+            gl_Position = vec4(convertToClipSpace(a_position), 0, 1);
             v_texCoord = a_texCoord;
         }
         `;
@@ -68,13 +70,8 @@ export const useFilterFrame = (selectedFilter: filterTypes) => {
         varying vec2 v_texCoord;
     
         void main() {
-    
-            vec2 onePixel = vec2(1.0, 1.0) / u_textureSize;
-            gl_FragColor = (
-              texture2D(u_image, v_texCoord) +
-              texture2D(u_image, v_texCoord + vec2(onePixel.x, 0.0)) +
-              texture2D(u_image, v_texCoord + vec2(-onePixel.x, 0.0))
-            ) / 3.0;
+            gl_FragColor = texture2D(u_image, v_texCoord);
+            // gl_FragColor = vec4(1.0, 0.0, 0.0, 1);
         }
         `;
 
@@ -105,17 +102,23 @@ export const useFilterFrame = (selectedFilter: filterTypes) => {
         const positionLocation = gl.getAttribLocation(program, "a_position");
         const positionBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-        setRectangle(gl, 0, 0, image.width, image.height);
+        setRectangle(gl, 0, 0, canvas.width, canvas.height);
         gl.enableVertexAttribArray(positionLocation);
         gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
 
         const textureLocation = gl.getAttribLocation(program, "a_texCoord");
-        const textureBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, textureBuffer);
-        setRectangle(gl, 0, 0, image.width, image.height);
+
+        var texcoordBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, texcoordBuffer);
+        gl.bufferData(
+          gl.ARRAY_BUFFER,
+          new Float32Array([
+            0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0,
+          ]),
+          gl.STATIC_DRAW
+        );
 
         const textureSize = gl.getUniformLocation(program, "u_textureSize");
-        const dpr = window.devicePixelRatio;
         gl.uniform2f(textureSize, image.width, image.height);
 
         gl.enableVertexAttribArray(textureLocation);
