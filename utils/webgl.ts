@@ -88,7 +88,6 @@ export const setRectangle = (
   var x2 = x + width;
   var y1 = y;
   var y2 = y + height;
-  console.log([x1, y1, x2, y1, x1, y2, x1, y2, x2, y1, x2, y2]);
   gl.bufferData(
     gl.ARRAY_BUFFER,
     new Float32Array([x1, y1, x2, y1, x1, y2, x1, y2, x2, y1, x2, y2]),

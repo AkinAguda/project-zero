@@ -23,15 +23,13 @@ export const useFilterFrame = (selectedFilter: filterTypes) => {
       const [image, error] = await loadImage(imageUrl);
       const gl = canvasRef.current?.getContext("webgl");
       if (image && gl) {
-        const dpr = window.devicePixelRatio;
-
         // Setting a local canvas variable
         const canvas = canvasRef.current!;
-        // Resizing rendering context
-
-        // Populating eventual vertex attrib array
-        const wCount = 5;
-        const hCount = 5;
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+        resizeCanvasToDisplaySize(canvas);
+        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+        gl.clearColor(0, 0, 0, 0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
 
         // Doing some shady stuff (pun intended)
         const vertexShaderSource = `
@@ -71,7 +69,6 @@ export const useFilterFrame = (selectedFilter: filterTypes) => {
     
         void main() {
             gl_FragColor = texture2D(u_image, v_texCoord);
-            // gl_FragColor = vec4(1.0, 0.0, 0.0, 1);
         }
         `;
 
@@ -134,16 +131,7 @@ export const useFilterFrame = (selectedFilter: filterTypes) => {
           image
         );
 
-        resizeCanvasToDisplaySize(canvas);
-
-        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-        gl.clearColor(0, 0, 0, 0);
-        gl.clear(gl.COLOR_BUFFER_BIT);
-
-        const primitiveType = gl.TRIANGLES;
-        const offset = 0;
-
-        gl.drawArrays(primitiveType, offset, 6);
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
       }
     });
 
