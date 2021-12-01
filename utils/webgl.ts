@@ -47,8 +47,6 @@ export const resizeCanvasToDisplaySize = (canvas: HTMLCanvasElement) => {
   const { width, height } = canvas.getBoundingClientRect();
   const displayWidth = Math.round(width * dpr);
   const displayHeight = Math.round(height * dpr);
-  // Get the size the browser is displaying the canvas in device pixels.
-  //    const [displayWidth, displayHeight] = canvasToDisplaySizeMap.get(canvas);
 
   // Check if the canvas is not the same size.
   const needResize =
@@ -64,7 +62,7 @@ export const resizeCanvasToDisplaySize = (canvas: HTMLCanvasElement) => {
 };
 
 export const createAndSetupTexture = (gl: WebGLRenderingContext) => {
-  var texture = gl.createTexture();
+  const texture = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_2D, texture);
 
   // Set up texture so we can render any size image and so we are
@@ -75,6 +73,52 @@ export const createAndSetupTexture = (gl: WebGLRenderingContext) => {
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 
   return texture;
+};
+
+export type TextureConfig = {
+  height: number;
+  width: number;
+};
+
+export const createTexturesWithFrameBuffers = (
+  gl: WebGLRenderingContext,
+  configs: TextureConfig[]
+): [WebGLTexture[], WebGLFramebuffer[], TextureConfig[]] => {
+  const textures: WebGLTexture[] = [];
+  const frameBuffers: WebGLFramebuffer[] = [];
+  configs.forEach((config) => {
+    const texture = createAndSetupTexture(gl);
+    if (texture) {
+      textures.push(texture);
+      gl.texImage2D(
+        gl.TEXTURE_2D,
+        0,
+        gl.RGBA,
+        config.width,
+        config.height,
+        0,
+        gl.RGBA,
+        gl.UNSIGNED_BYTE,
+        null
+      );
+
+      const frameBuffer = gl.createFramebuffer();
+      if (frameBuffer) {
+        frameBuffers.push(frameBuffer);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
+
+        gl.framebufferTexture2D(
+          gl.FRAMEBUFFER,
+          gl.COLOR_ATTACHMENT0,
+          gl.TEXTURE_2D,
+          texture,
+          0
+        );
+      }
+    }
+  });
+
+  return [textures, frameBuffers, configs];
 };
 
 export const setRectangle = (

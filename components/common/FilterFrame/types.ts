@@ -1,13 +1,13 @@
 import { RefObject } from "react";
 
-export type FilterTypes = "DARKEN" | "BLACK_AND_WHITE" | "SHARPEN";
+export type FilterTypes = "EMBOSS" | "GAUSSIAN_BLUR" | "UNSHARPEN" | "NORMAL";
 
 export interface FilterFrameContainerProps
   extends React.DetailedHTMLProps<
     React.CanvasHTMLAttributes<HTMLCanvasElement>,
     HTMLCanvasElement
   > {
-  filter: FilterTypes;
+  filter: FilterTypes[];
   imageUrl: string;
 }
 

@@ -1,4 +1,3 @@
-import { mergeClasses } from "@hzn/utils/functions";
 import { FilterFrameViewProps } from "./types";
 import classes from "./FilterFrame.module.scss";
 
