@@ -7,7 +7,8 @@ import {
   createAndSetupTexture,
   setRectangle,
 } from "@hzn/utils/webgl";
-import { filterTypes } from "./types";
+import { getConvolutionKernel } from "./functions";
+import { FilterTypes } from "./types";
 
 /**
  * This hook is responsible for everything regarding the filter frame.
@@ -15,12 +16,15 @@ import { filterTypes } from "./types";
  * @param selectedFilter This is the filter you want frame to have
  * @returns
  */
-export const useFilterFrame = (selectedFilter: filterTypes) => {
+export const useFilterFrame = (selectedFilter: FilterTypes) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [filter, setFilter] = useState<filterTypes>(selectedFilter);
+  const [filter, setFilter] = useState<FilterTypes>(selectedFilter);
   const renderFrame = (imageUrl: string) =>
     new Promise(async (resolve, reject) => {
       const [image, error] = await loadImage(imageUrl);
+      if (error) {
+        reject(error);
+      }
       const gl = canvasRef.current?.getContext("webgl");
       if (image && gl) {
         // Setting a local canvas variable
@@ -63,12 +67,28 @@ export const useFilterFrame = (selectedFilter: filterTypes) => {
         precision mediump float;
 
         uniform sampler2D u_image;
-        uniform vec2 u_textureSize;
+        uniform vec2 u_textureSize;     
+        uniform float u_kernel[9];
+        uniform float u_kernelWeight;
     
         varying vec2 v_texCoord;
     
         void main() {
-            gl_FragColor = texture2D(u_image, v_texCoord);
+          vec2 onePixel = vec2(1.0, 1.0) / u_textureSize;
+          vec4 colorSum =
+            texture2D(u_image, v_texCoord + onePixel * vec2(-1, -1)) * u_kernel[0] +
+            texture2D(u_image, v_texCoord + onePixel * vec2( 0, -1)) * u_kernel[1] +
+            texture2D(u_image, v_texCoord + onePixel * vec2( 1, -1)) * u_kernel[2] +
+            texture2D(u_image, v_texCoord + onePixel * vec2(-1,  0)) * u_kernel[3] +
+            texture2D(u_image, v_texCoord + onePixel * vec2( 0,  0)) * u_kernel[4] +
+            texture2D(u_image, v_texCoord + onePixel * vec2( 1,  0)) * u_kernel[5] +
+            texture2D(u_image, v_texCoord + onePixel * vec2(-1,  1)) * u_kernel[6] +
+            texture2D(u_image, v_texCoord + onePixel * vec2( 0,  1)) * u_kernel[7] +
+            texture2D(u_image, v_texCoord + onePixel * vec2( 1,  1)) * u_kernel[8] ;
+        
+          // Divide the sum by the weight but just use rgb
+          // we'll set alpha to 1.0
+          gl_FragColor = vec4((colorSum / u_kernelWeight).rgb, 1.0);
         }
         `;
 
@@ -94,6 +114,28 @@ export const useFilterFrame = (selectedFilter: filterTypes) => {
           resolutionUniformLocation,
           gl.canvas.width,
           gl.canvas.height
+        );
+
+        const kernel = getConvolutionKernel(filter);
+
+        const kernelUniformLocation = gl.getUniformLocation(
+          program,
+          "u_kernel"
+        );
+
+        gl.uniform1fv(kernelUniformLocation, kernel);
+
+        const kernelWeightUniformLocation = gl.getUniformLocation(
+          program,
+          "u_kernelWeight"
+        );
+
+        gl.uniform1f(
+          kernelWeightUniformLocation,
+          Math.min(
+            kernel.reduce((a, b) => a + b),
+            1
+          )
         );
 
         const positionLocation = gl.getAttribLocation(program, "a_position");
