@@ -67,6 +67,7 @@ export const setupImageRenderer = (
     uniform vec2 u_textureSize;     
     uniform float u_kernel[9];
     uniform float u_kernelWeight;
+    uniform float u_greyscaleFactor;
 
     varying vec2 v_texCoord;
 
@@ -85,7 +86,9 @@ export const setupImageRenderer = (
     
     // Divide the sum by the weight but just use rgb
     // we'll set alpha to 1.0
-    gl_FragColor = vec4((colorSum / u_kernelWeight).rgb, 1.0);
+    vec4 rgba = (colorSum / u_kernelWeight).rgba;
+    float grey = 0.21 * rgba.r + 0.71 * rgba.g + 0.07 * rgba.b;
+    gl_FragColor = vec4(rgba.rgb * (1.0 - u_greyscaleFactor) + (grey * u_greyscaleFactor), rgba.a);
     }
 `;
 
@@ -102,6 +105,13 @@ export const setupImageRenderer = (
     program,
     "u_resolution"
   );
+
+  const greyscaleFactorUniform = gl.getUniformLocation(
+    program,
+    "u_greyscaleFactor"
+  );
+
+  gl.uniform1f(greyscaleFactorUniform, 0.0);
 
   const positionLocation = gl.getAttribLocation(program, "a_position");
   const positionBuffer = gl.createBuffer();
