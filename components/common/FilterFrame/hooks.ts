@@ -56,7 +56,7 @@ export const useFilterFrame = (selectedFilter: FilterTypes[]) => {
         });
         setFramebuffer(null, { width: canvas.width, height: canvas.height });
 
-        drawWithKernel(getConvolutionKernel("NORMAL"));
+        resolve(drawWithKernel(getConvolutionKernel("NORMAL")));
       }
     });
 
