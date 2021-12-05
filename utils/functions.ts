@@ -137,3 +137,32 @@ export const getPolygonCoords = (
 
   return cornerCoords;
 };
+
+export const getPolyVertices = (
+  x: number,
+  y: number,
+  hyp: number,
+  angle: number
+) => {
+  const vertices: number[] = [];
+  const coords = getPolygonCoords(x, y, hyp, angle);
+
+  for (let i = 1; i < coords.length; i++) {
+    const poin1 = coords[i - 1];
+    const poin2 = coords[i];
+    vertices.push(poin1[0]);
+    vertices.push(poin1[1]);
+    vertices.push(x);
+    vertices.push(y);
+    vertices.push(poin2[0]);
+    vertices.push(poin2[1]);
+  }
+  vertices.push(coords[coords.length - 1][0]);
+  vertices.push(coords[coords.length - 1][1]);
+  vertices.push(x);
+  vertices.push(y);
+  vertices.push(coords[0][0]);
+  vertices.push(coords[0][1]);
+
+  return vertices;
+};

@@ -7,10 +7,12 @@ const FilterFrameontainer: React.FC<FilterFrameContainerProps> = ({
   imageUrl,
   filter,
 }) => {
-  const { canvasRef, renderFrame } = useFilterFrame(filter);
+  const { canvasRef, renderFrame, transition } = useFilterFrame(filter);
   useEffect(() => {
-    renderFrame(imageUrl);
-  }, [renderFrame, imageUrl]);
+    renderFrame(imageUrl)
+      .then(() => transition(["EMBOSS"]))
+      .then((v) => console.log(v));
+  }, [renderFrame, imageUrl, transition]);
   return <FilterFrame canvasRef={canvasRef} />;
 };
 

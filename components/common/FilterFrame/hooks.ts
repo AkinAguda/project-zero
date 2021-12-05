@@ -1,8 +1,9 @@
 import { useState, useRef } from "react";
-import { loadImage } from "@hzn/utils/functions";
+import { loadImage, getPolyVertices } from "@hzn/utils/functions";
 import {
   createAndSetupTexture,
   createTexturesWithFrameBuffers,
+  getRectangleVertices,
 } from "@hzn/utils/webgl";
 import { getConvolutionKernel, setupImageRenderer } from "./functions";
 import { FilterTypes } from "./types";
@@ -15,20 +16,30 @@ import { FilterTypes } from "./types";
  */
 export const useFilterFrame = (selectedFilter: FilterTypes[]) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const frameRendered = useRef(false);
   const [filters, setFilters] = useState<FilterTypes[]>(selectedFilter);
+  type ImageRendererType = ReturnType<typeof setupImageRenderer>;
+  const imageRendererObj = useRef<ImageRendererType | null>(null);
+  const imageRef = useRef<HTMLImageElement | null>(null);
   const renderFrame = (imageUrl: string) =>
     new Promise(async (resolve, reject) => {
       const [image, error] = await loadImage(imageUrl);
+      imageRef.current = image;
       if (error) {
         reject(error);
       }
       const gl = canvasRef.current?.getContext("webgl");
       if (image && gl && canvasRef.current) {
         const canvas = canvasRef.current;
-        const { drawWithKernel, setFramebuffer } = setupImageRenderer(
-          gl,
-          image,
-          canvas
+
+        imageRendererObj.current = setupImageRenderer(gl, image, canvas);
+
+        const { drawWithKernel, setFramebuffer, setVertices } =
+          imageRendererObj.current;
+
+        setVertices(
+          getRectangleVertices(0, 0, canvas.width, canvas.height),
+          [0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0]
         );
 
         const [textures, frameBuffers, configs] =
@@ -38,6 +49,7 @@ export const useFilterFrame = (selectedFilter: FilterTypes[]) => {
           ]);
 
         createAndSetupTexture(gl);
+
         gl.texImage2D(
           gl.TEXTURE_2D,
           0,
@@ -50,13 +62,72 @@ export const useFilterFrame = (selectedFilter: FilterTypes[]) => {
         filters.forEach((filter, index) => {
           setFramebuffer(frameBuffers[index % 2], configs[index % 2]);
 
-          drawWithKernel(getConvolutionKernel(filter));
+          drawWithKernel(getConvolutionKernel(filter), 6);
 
           gl.bindTexture(gl.TEXTURE_2D, textures[index % 2]);
         });
+
         setFramebuffer(null, { width: canvas.width, height: canvas.height });
 
-        resolve(drawWithKernel(getConvolutionKernel("NORMAL")));
+        drawWithKernel(getConvolutionKernel("NORMAL"), 6);
+
+        frameRendered.current = true;
+
+        resolve("SUCCESS");
+      } else {
+        reject("ERROR OCCURED SOMEWHERE");
+        console.log(image, gl, canvasRef.current);
+      }
+    });
+
+  const transition = (finalFilters: FilterTypes[], time = 1) =>
+    new Promise((resolve, reject) => {
+      const gl = canvasRef.current?.getContext("webgl");
+      const image = imageRef.current!;
+      if (gl) {
+        if (!frameRendered.current) {
+          reject("RENDER A FRAME with renderFrame before trying to transition");
+        } else {
+          const { drawWithKernel, setFramebuffer, setVertices } =
+            imageRendererObj.current!;
+
+          const canvas = canvasRef.current!;
+          const l = getPolyVertices(30, 30, 20, 60);
+          setVertices(
+            l,
+            [0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0]
+          );
+
+          const [textures, frameBuffers, configs] =
+            createTexturesWithFrameBuffers(gl, [
+              { width: canvas.width, height: canvas.height },
+              { width: canvas.width, height: canvas.height },
+            ]);
+
+          createAndSetupTexture(gl);
+
+          gl.texImage2D(
+            gl.TEXTURE_2D,
+            0,
+            gl.RGBA,
+            gl.RGBA,
+            gl.UNSIGNED_BYTE,
+            image
+          );
+
+          filters.forEach((filter, index) => {
+            setFramebuffer(frameBuffers[index % 2], configs[index % 2]);
+
+            drawWithKernel(getConvolutionKernel(filter), 6);
+
+            gl.bindTexture(gl.TEXTURE_2D, textures[index % 2]);
+          });
+
+          setFramebuffer(null, { width: canvas.width, height: canvas.height });
+
+          drawWithKernel(getConvolutionKernel("NORMAL"), l.length / 2);
+        }
+        resolve("TRANSITIONED");
       }
     });
 
@@ -65,5 +136,6 @@ export const useFilterFrame = (selectedFilter: FilterTypes[]) => {
     filters,
     setFilters,
     canvasRef,
+    transition,
   };
 };

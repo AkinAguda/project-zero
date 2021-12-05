@@ -2,7 +2,7 @@ import {
   createShader,
   createProgram,
   resizeCanvasToDisplaySize,
-  setRectangle,
+  // setRectangle,
   TextureConfig,
 } from "@hzn/utils/webgl";
 import { FilterTypes } from "./types";
@@ -84,8 +84,6 @@ export const setupImageRenderer = (
         texture2D(u_image, v_texCoord + onePixel * vec2( 0,  1)) * u_kernel[7] +
         texture2D(u_image, v_texCoord + onePixel * vec2( 1,  1)) * u_kernel[8] ;
     
-    // Divide the sum by the weight but just use rgb
-    // we'll set alpha to 1.0
     vec4 rgba = (colorSum / u_kernelWeight).rgba;
     float grey = 0.21 * rgba.r + 0.71 * rgba.g + 0.07 * rgba.b;
     gl_FragColor = vec4(rgba.rgb * (1.0 - u_greyscaleFactor) + (grey * u_greyscaleFactor), rgba.a);
@@ -113,26 +111,6 @@ export const setupImageRenderer = (
 
   gl.uniform1f(greyscaleFactorUniform, 0.0);
 
-  const positionLocation = gl.getAttribLocation(program, "a_position");
-  const positionBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-  setRectangle(gl, 0, 0, canvas.width, canvas.height);
-  gl.enableVertexAttribArray(positionLocation);
-  gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
-
-  const textureLocation = gl.getAttribLocation(program, "a_texCoord");
-  var texcoordBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, texcoordBuffer);
-  gl.bufferData(
-    gl.ARRAY_BUFFER,
-    new Float32Array([
-      0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0,
-    ]),
-    gl.STATIC_DRAW
-  );
-  gl.enableVertexAttribArray(textureLocation);
-  gl.vertexAttribPointer(textureLocation, 2, gl.FLOAT, false, 0, 0);
-
   const kernelWeightUniformLocation = gl.getUniformLocation(
     program,
     "u_kernelWeight"
@@ -140,6 +118,22 @@ export const setupImageRenderer = (
 
   const textureSize = gl.getUniformLocation(program, "u_textureSize");
   gl.uniform2f(textureSize, image.width, image.height);
+
+  const setVertices = (aPosition: number[], aTexCoord: number[]) => {
+    const positionLocation = gl.getAttribLocation(program, "a_position");
+    const positionBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(aPosition), gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(positionLocation);
+    gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+
+    const textureLocation = gl.getAttribLocation(program, "a_texCoord");
+    var texcoordBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, texcoordBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(aTexCoord), gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(textureLocation);
+    gl.vertexAttribPointer(textureLocation, 2, gl.FLOAT, false, 0, 0);
+  };
 
   const setFramebuffer = (
     frameBuffer: WebGLFramebuffer | null,
@@ -156,7 +150,7 @@ export const setupImageRenderer = (
   };
 
   const kernelUniformLocation = gl.getUniformLocation(program, "u_kernel");
-  const drawWithKernel = (kernel: number[]) => {
+  const drawWithKernel = (kernel: number[], verticesCount: number) => {
     // set the kernel
     gl.uniform1fv(kernelUniformLocation, kernel);
 
@@ -169,7 +163,7 @@ export const setupImageRenderer = (
     );
 
     // Draw the rectangle.
-    gl.drawArrays(gl.TRIANGLES, 0, 6);
+    gl.drawArrays(gl.TRIANGLES, 0, verticesCount);
   };
-  return { drawWithKernel, setFramebuffer };
+  return { drawWithKernel, setFramebuffer, setVertices };
 };
