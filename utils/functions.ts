@@ -147,3 +147,57 @@ export const getTriangularVertices = (
   }
   return vertices;
 };
+
+export const angleInRadians = (angle: number) => (angle * Math.PI) / 180;
+
+const quadrantFuncs: Array<
+  (x: number, y: number, hyp: number, angle: number) => [number, number]
+> = [
+  (x: number, y: number, hyp: number, angle: number) => [
+    x + Math.sin(angleInRadians(angle)) * hyp,
+    y + Math.cos(angleInRadians(angle)) * hyp,
+  ],
+
+  (x: number, y: number, hyp: number, angle: number) => [
+    x + Math.cos(angleInRadians(angle - 90)) * hyp,
+    y - Math.sin(angleInRadians(angle - 90)) * hyp,
+  ],
+
+  (x: number, y: number, hyp: number, angle: number) => [
+    x - Math.sin(angleInRadians(angle - 180)) * hyp,
+    y - Math.cos(angleInRadians(angle - 180)) * hyp,
+  ],
+
+  (x: number, y: number, hyp: number, angle: number) => [
+    x - Math.cos(angleInRadians(angle - 270)) * hyp,
+    y + Math.sin(angleInRadians(angle - 270)) * hyp,
+  ],
+];
+
+export const getPolygonCoords = (
+  x: number,
+  y: number,
+  hyp: number,
+  angle: number
+) => {
+  const cornerCoords: [number, number][] = [];
+  const numberOfSides = 360 / angle;
+
+  let quadrantIndex = 0;
+  let cumulativeAngle = 0;
+  let quadrantMax = 90;
+
+  for (let i = 0; i < numberOfSides; i++) {
+    if (cumulativeAngle >= quadrantMax) {
+      quadrantIndex++;
+      quadrantMax += 90;
+    }
+    const coords = quadrantFuncs[quadrantIndex](x, y, hyp, cumulativeAngle);
+    cornerCoords.push([round(coords[0], 100), round(coords[1], 100)]);
+    cumulativeAngle += angle;
+  }
+
+  return cornerCoords;
+};
+
+console.log(getPolygonCoords(0, 0, 5, 60));
