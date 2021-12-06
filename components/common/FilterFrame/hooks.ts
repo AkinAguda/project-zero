@@ -39,7 +39,8 @@ export const useFilterFrame = (selectedFilter: FilterTypes[]) => {
 
         setVertices(
           getRectangleVertices(0, 0, canvas.width, canvas.height),
-          [0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0]
+          getRectangleVertices(0, 0, image.width, image.height)
+          // [0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0]
         );
 
         const [textures, frameBuffers, configs] =
@@ -76,7 +77,6 @@ export const useFilterFrame = (selectedFilter: FilterTypes[]) => {
         resolve("SUCCESS");
       } else {
         reject("ERROR OCCURED SOMEWHERE");
-        console.log(image, gl, canvasRef.current);
       }
     });
 
@@ -92,11 +92,9 @@ export const useFilterFrame = (selectedFilter: FilterTypes[]) => {
             imageRendererObj.current!;
 
           const canvas = canvasRef.current!;
-          const l = getPolyVertices(30, 30, 20, 60);
-          setVertices(
-            l,
-            [0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0]
-          );
+          const vertices = getPolyVertices(30, 30, 20, 60);
+
+          setVertices(vertices, vertices);
 
           const [textures, frameBuffers, configs] =
             createTexturesWithFrameBuffers(gl, [
@@ -125,7 +123,7 @@ export const useFilterFrame = (selectedFilter: FilterTypes[]) => {
 
           setFramebuffer(null, { width: canvas.width, height: canvas.height });
 
-          drawWithKernel(getConvolutionKernel("NORMAL"), l.length / 2);
+          drawWithKernel(getConvolutionKernel("NORMAL"), vertices.length / 2);
         }
         resolve("TRANSITIONED");
       }
@@ -139,3 +137,5 @@ export const useFilterFrame = (selectedFilter: FilterTypes[]) => {
     transition,
   };
 };
+
+//  [0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0]

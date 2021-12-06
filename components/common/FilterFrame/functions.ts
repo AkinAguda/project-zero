@@ -39,24 +39,35 @@ export const setupImageRenderer = (
     attribute vec2 a_position;
     attribute vec2 a_texCoord;
 
+    uniform vec2 u_canvasResolution;
+    uniform vec2 u_imageResolution;
     uniform vec2 u_resolution;
 
     varying vec2 v_texCoord;
 
-    vec2 convertToClipSpace(vec2 position) {
+    vec2 convertToClipSpace(vec2 position, vec2 resolution) {
 
-    vec2 zeroToOne = position / u_resolution;
-    
-    vec2 zeroToTwo = zeroToOne * 2.0;
-    
-    vec2 clipSpace = zeroToTwo - 1.0;
-    
-    return clipSpace;
+      vec2 zeroToOne = position / resolution;
+      
+      vec2 zeroToTwo = zeroToOne * 2.0;
+      
+      vec2 clipSpace = vec2(zeroToTwo.x - 1.0, 1.0 - zeroToTwo.y);
+      
+      return clipSpace;
+    }
+
+    vec2 convertToTextureClipSpace(vec2 position, vec2 resolution) {
+
+      vec2 zeroToOne = position / resolution;
+      
+      vec2 clipSpace = vec2(zeroToOne.x, 1.0 - zeroToOne.y);
+      
+      return clipSpace;
     }
 
     void main() {
-        gl_Position = vec4(convertToClipSpace(a_position), 0, 1);
-        v_texCoord = a_texCoord;
+        gl_Position = vec4(convertToClipSpace(a_position, u_canvasResolution), 0, 1);
+        v_texCoord = convertToTextureClipSpace(a_texCoord, u_imageResolution);
     }
 `;
 
@@ -99,9 +110,14 @@ export const setupImageRenderer = (
   const program = createProgram(gl, vertexShader, fragmentShader)!;
   gl.useProgram(program);
 
-  const resolutionUniformLocation = gl.getUniformLocation(
+  const canvasResolutionUniformLocation = gl.getUniformLocation(
     program,
-    "u_resolution"
+    "u_canvasResolution"
+  );
+
+  const imageResolutionUniformLocation = gl.getUniformLocation(
+    program,
+    "u_imageResolution"
   );
 
   const greyscaleFactorUniform = gl.getUniformLocation(
@@ -135,6 +151,8 @@ export const setupImageRenderer = (
     gl.vertexAttribPointer(textureLocation, 2, gl.FLOAT, false, 0, 0);
   };
 
+  gl.uniform2f(imageResolutionUniformLocation, image.width, image.height);
+
   const setFramebuffer = (
     frameBuffer: WebGLFramebuffer | null,
     config: TextureConfig
@@ -143,7 +161,7 @@ export const setupImageRenderer = (
     // make this the framebuffer we are rendering to.
     gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
 
-    gl.uniform2f(resolutionUniformLocation, width, height);
+    gl.uniform2f(canvasResolutionUniformLocation, width, height);
 
     // Tell webgl the viewport setting needed for framebuffer.
     gl.viewport(0, 0, width, height);
