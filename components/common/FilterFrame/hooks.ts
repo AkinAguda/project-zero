@@ -37,9 +37,22 @@ export const useFilterFrame = (selectedFilter: FilterTypes[]) => {
         const { drawWithKernel, setFramebuffer, setVertices } =
           imageRendererObj.current;
 
+        const canvasVertices = getRectangleVertices(
+          0,
+          0,
+          canvas.width,
+          canvas.height
+        );
+        const imageVertices = getRectangleVertices(
+          0,
+          0,
+          image.width,
+          image.height
+        );
+
         setVertices(
-          getRectangleVertices(0, 0, canvas.width, canvas.height),
-          getRectangleVertices(0, 0, image.width, image.height)
+          canvasVertices,
+          imageVertices
           // [0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0]
         );
 
@@ -63,14 +76,20 @@ export const useFilterFrame = (selectedFilter: FilterTypes[]) => {
         filters.forEach((filter, index) => {
           setFramebuffer(frameBuffers[index % 2], configs[index % 2]);
 
-          drawWithKernel(getConvolutionKernel(filter), 6);
+          drawWithKernel(
+            getConvolutionKernel(filter),
+            canvasVertices.length / 2
+          );
 
           gl.bindTexture(gl.TEXTURE_2D, textures[index % 2]);
         });
 
         setFramebuffer(null, { width: canvas.width, height: canvas.height });
 
-        drawWithKernel(getConvolutionKernel("NORMAL"), 6);
+        drawWithKernel(
+          getConvolutionKernel("NORMAL"),
+          canvasVertices.length / 2
+        );
 
         frameRendered.current = true;
 
@@ -92,9 +111,24 @@ export const useFilterFrame = (selectedFilter: FilterTypes[]) => {
             imageRendererObj.current!;
 
           const canvas = canvasRef.current!;
-          const vertices = getPolyVertices(30, 30, 20, 60);
+          const x = 300;
+          const y = 400;
+          const hyp = 100;
+          const angle = 60;
+          const canvasVertices = getPolyVertices([x, y], [hyp, hyp], angle);
+          const imageVertices = getPolyVertices(
+            [
+              x * (image.width / canvas.width),
+              y * (image.height / canvas.height),
+            ],
+            [
+              hyp * (image.width / canvas.width),
+              hyp * (image.height / canvas.height),
+            ],
+            angle
+          );
 
-          setVertices(vertices, vertices);
+          setVertices(canvasVertices, imageVertices);
 
           const [textures, frameBuffers, configs] =
             createTexturesWithFrameBuffers(gl, [
@@ -113,17 +147,23 @@ export const useFilterFrame = (selectedFilter: FilterTypes[]) => {
             image
           );
 
-          filters.forEach((filter, index) => {
+          finalFilters.forEach((filter, index) => {
             setFramebuffer(frameBuffers[index % 2], configs[index % 2]);
 
-            drawWithKernel(getConvolutionKernel(filter), 6);
+            drawWithKernel(
+              getConvolutionKernel(filter),
+              canvasVertices.length / 2
+            );
 
             gl.bindTexture(gl.TEXTURE_2D, textures[index % 2]);
           });
 
           setFramebuffer(null, { width: canvas.width, height: canvas.height });
 
-          drawWithKernel(getConvolutionKernel("NORMAL"), vertices.length / 2);
+          drawWithKernel(
+            getConvolutionKernel("NORMAL"),
+            canvasVertices.length / 2
+          );
         }
         resolve("TRANSITIONED");
       }

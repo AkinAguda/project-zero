@@ -1,4 +1,4 @@
-type ConditionalClass = [boolean, ...(string | ConditionalClass)[]];
+import { ConditionalClass, Point } from "./types";
 
 /**
  * This function allows you to combine sevral classNames together.
@@ -89,33 +89,32 @@ export const m3 = {
 export const angleInRadians = (angle: number) => (angle * Math.PI) / 180;
 
 const quadrantFuncs: Array<
-  (x: number, y: number, hyp: number, angle: number) => [number, number]
+  (point: Point, hypCoords: Point, angle: number) => Point
 > = [
-  (x: number, y: number, hyp: number, angle: number) => [
-    x + Math.sin(angleInRadians(angle)) * hyp,
-    y + Math.cos(angleInRadians(angle)) * hyp,
+  (point: Point, hypCoords: Point, angle: number) => [
+    point[0] + Math.sin(angleInRadians(angle)) * hypCoords[0],
+    point[1] + Math.cos(angleInRadians(angle)) * hypCoords[1],
   ],
 
-  (x: number, y: number, hyp: number, angle: number) => [
-    x + Math.cos(angleInRadians(angle - 90)) * hyp,
-    y - Math.sin(angleInRadians(angle - 90)) * hyp,
+  (point: Point, hypCoords: Point, angle: number) => [
+    point[0] + Math.cos(angleInRadians(angle - 90)) * hypCoords[0],
+    point[1] - Math.sin(angleInRadians(angle - 90)) * hypCoords[1],
   ],
 
-  (x: number, y: number, hyp: number, angle: number) => [
-    x - Math.sin(angleInRadians(angle - 180)) * hyp,
-    y - Math.cos(angleInRadians(angle - 180)) * hyp,
+  (point: Point, hypCoords: Point, angle: number) => [
+    point[0] - Math.sin(angleInRadians(angle - 180)) * hypCoords[0],
+    point[1] - Math.cos(angleInRadians(angle - 180)) * hypCoords[1],
   ],
 
-  (x: number, y: number, hyp: number, angle: number) => [
-    x - Math.cos(angleInRadians(angle - 270)) * hyp,
-    y + Math.sin(angleInRadians(angle - 270)) * hyp,
+  (point: Point, hypCoords: Point, angle: number) => [
+    point[0] - Math.cos(angleInRadians(angle - 270)) * hypCoords[0],
+    point[1] + Math.sin(angleInRadians(angle - 270)) * hypCoords[1],
   ],
 ];
 
 export const getPolygonCoords = (
-  x: number,
-  y: number,
-  hyp: number,
+  point: Point,
+  hypCoords: Point,
   angle: number
 ) => {
   const cornerCoords: [number, number][] = [];
@@ -130,7 +129,11 @@ export const getPolygonCoords = (
       quadrantIndex++;
       quadrantMax += 90;
     }
-    const coords = quadrantFuncs[quadrantIndex](x, y, hyp, cumulativeAngle);
+    const coords = quadrantFuncs[quadrantIndex](
+      point,
+      hypCoords,
+      cumulativeAngle
+    );
     cornerCoords.push([round(coords[0], 100), round(coords[1], 100)]);
     cumulativeAngle += angle;
   }
@@ -139,28 +142,27 @@ export const getPolygonCoords = (
 };
 
 export const getPolyVertices = (
-  x: number,
-  y: number,
-  hyp: number,
+  point: Point,
+  hypCoords: Point,
   angle: number
 ) => {
   const vertices: number[] = [];
-  const coords = getPolygonCoords(x, y, hyp, angle);
+  const coords = getPolygonCoords(point, hypCoords, angle);
 
   for (let i = 1; i < coords.length; i++) {
     const poin1 = coords[i - 1];
     const poin2 = coords[i];
     vertices.push(poin1[0]);
     vertices.push(poin1[1]);
-    vertices.push(x);
-    vertices.push(y);
+    vertices.push(point[0]);
+    vertices.push(point[1]);
     vertices.push(poin2[0]);
     vertices.push(poin2[1]);
   }
   vertices.push(coords[coords.length - 1][0]);
   vertices.push(coords[coords.length - 1][1]);
-  vertices.push(x);
-  vertices.push(y);
+  vertices.push(point[0]);
+  vertices.push(point[1]);
   vertices.push(coords[0][0]);
   vertices.push(coords[0][1]);
 
