@@ -110,6 +110,8 @@ export const setupImageRenderer = (
   const program = createProgram(gl, vertexShader, fragmentShader)!;
   gl.useProgram(program);
 
+  const kernelUniformLocation = gl.getUniformLocation(program, "u_kernel");
+
   const canvasResolutionUniformLocation = gl.getUniformLocation(
     program,
     "u_canvasResolution"
@@ -124,8 +126,6 @@ export const setupImageRenderer = (
     program,
     "u_greyscaleFactor"
   );
-
-  gl.uniform1f(greyscaleFactorUniform, 0.0);
 
   const kernelWeightUniformLocation = gl.getUniformLocation(
     program,
@@ -167,7 +167,6 @@ export const setupImageRenderer = (
     gl.viewport(0, 0, width, height);
   };
 
-  const kernelUniformLocation = gl.getUniformLocation(program, "u_kernel");
   const drawWithKernel = (kernel: number[], verticesCount: number) => {
     // set the kernel
     gl.uniform1fv(kernelUniformLocation, kernel);
@@ -179,9 +178,17 @@ export const setupImageRenderer = (
         1
       )
     );
-
     // Draw the rectangle.
     gl.drawArrays(gl.TRIANGLES, 0, verticesCount);
   };
-  return { drawWithKernel, setFramebuffer, setVertices };
+
+  /**
+   * A floating point value between 0.0 and 1
+   * @param value
+   */
+  const setGreyscale = (value: number) => {
+    gl.uniform1f(greyscaleFactorUniform, value);
+  };
+
+  return { drawWithKernel, setFramebuffer, setVertices, setGreyscale };
 };

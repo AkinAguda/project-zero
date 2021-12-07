@@ -9,6 +9,7 @@ export interface FilterFrameContainerProps
   > {
   filter: FilterTypes[];
   imageUrl: string;
+  greyscale?: number;
 }
 
 export interface FilterFrameViewProps {

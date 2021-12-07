@@ -14,7 +14,10 @@ import { FilterTypes } from "./types";
  * @param selectedFilter This is the filter you want frame to have
  * @returns
  */
-export const useFilterFrame = (selectedFilter: FilterTypes[]) => {
+export const useFilterFrame = (
+  selectedFilter: FilterTypes[],
+  greyScale = 0
+) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const frameRendered = useRef(false);
   const [filters, setFilters] = useState<FilterTypes[]>(selectedFilter);
@@ -34,8 +37,10 @@ export const useFilterFrame = (selectedFilter: FilterTypes[]) => {
 
         imageRendererObj.current = setupImageRenderer(gl, image, canvas);
 
-        const { drawWithKernel, setFramebuffer, setVertices } =
+        const { drawWithKernel, setFramebuffer, setVertices, setGreyscale } =
           imageRendererObj.current;
+
+        setGreyscale(greyScale);
 
         const canvasVertices = getRectangleVertices(
           0,
@@ -107,8 +112,10 @@ export const useFilterFrame = (selectedFilter: FilterTypes[]) => {
         if (!frameRendered.current) {
           reject("RENDER A FRAME with renderFrame before trying to transition");
         } else {
-          const { drawWithKernel, setFramebuffer, setVertices } =
+          const { drawWithKernel, setFramebuffer, setVertices, setGreyscale } =
             imageRendererObj.current!;
+
+          setGreyscale(0.0);
 
           const canvas = canvasRef.current!;
           const x = 300;

@@ -6,8 +6,12 @@ import FilterFrame from "./FilterFrame";
 const FilterFrameontainer: React.FC<FilterFrameContainerProps> = ({
   imageUrl,
   filter,
+  greyscale,
 }) => {
-  const { canvasRef, renderFrame, transition } = useFilterFrame(filter);
+  const { canvasRef, renderFrame, transition } = useFilterFrame(
+    filter,
+    greyscale
+  );
   useEffect(() => {
     renderFrame(imageUrl)
       .then(() => transition(["NORMAL"]))
