@@ -1,4 +1,4 @@
-import { ConditionalClass, Point } from "./types";
+import { ConditionalClass, Point, Polygon } from "./types";
 
 /**
  * This function allows you to combine sevral classNames together.
@@ -141,30 +141,65 @@ export const getPolygonCoords = (
   return cornerCoords;
 };
 
-export const getPolyVertices = (
-  point: Point,
-  hypCoords: Point,
-  angle: number
-) => {
+export const getShaderPolyVertexCoords = (center: Point, coords: Point[]) => {
   const vertices: number[] = [];
-  const coords = getPolygonCoords(point, hypCoords, angle);
-
   for (let i = 1; i < coords.length; i++) {
     const poin1 = coords[i - 1];
     const poin2 = coords[i];
     vertices.push(poin1[0]);
     vertices.push(poin1[1]);
-    vertices.push(point[0]);
-    vertices.push(point[1]);
+    vertices.push(center[0]);
+    vertices.push(center[1]);
     vertices.push(poin2[0]);
     vertices.push(poin2[1]);
   }
   vertices.push(coords[coords.length - 1][0]);
   vertices.push(coords[coords.length - 1][1]);
-  vertices.push(point[0]);
-  vertices.push(point[1]);
+  vertices.push(center[0]);
+  vertices.push(center[1]);
   vertices.push(coords[0][0]);
   vertices.push(coords[0][1]);
 
   return vertices;
+};
+
+export const getPolyVertices = (
+  point: Point,
+  hypCoords: Point,
+  angle: number
+) => {
+  return getShaderPolyVertexCoords(
+    point,
+    getPolygonCoords(point, hypCoords, angle)
+  );
+};
+
+export const getValueClosestTo = (value: number, total: number): number => {
+  const sides = total / value;
+  return total / Math.round(sides);
+};
+
+export const splitRectangeIntoHexagons = (
+  width: number,
+  height: number,
+  idealHyp: number,
+  angle: number
+): Array<Polygon> => {
+  const hexagons: Array<Polygon> = [];
+
+  const hypX = getValueClosestTo(idealHyp, width);
+  const hypY = getValueClosestTo(idealHyp, height);
+
+  for (let i = 0; i < height; i += hypY / 2) {
+    for (let j = 0; j < width; j += hypX / 2) {
+      let vertices = getPolygonCoords([j, i], [hypX, hypY], angle);
+      hexagons.push({
+        center: [j, i],
+        vertices: vertices,
+        vsVertices: getShaderPolyVertexCoords([j, i], vertices),
+      });
+    }
+  }
+
+  return hexagons;
 };
