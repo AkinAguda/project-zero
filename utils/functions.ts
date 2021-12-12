@@ -190,9 +190,22 @@ export const splitRectangeIntoHexagons = (
   const hypX = getValueClosestTo(idealHyp, width);
   const hypY = getValueClosestTo(idealHyp, height);
 
-  for (let i = 0; i < height; i += hypY / 2) {
-    for (let j = 0; j < width; j += hypX / 2) {
+  const firstPoint = quadrantFuncs[0]([0, 0], [hypX, hypY], 60);
+
+  // Half the height of the rectange generated within a hexagon
+  const hexagonInnerRectH = hypY - firstPoint[1];
+
+  // Half the width of the rectange generated within a hexagon
+  const hexagonInnerRectW = firstPoint[0];
+
+  console.log(hexagonInnerRectH, hexagonInnerRectW);
+
+  let count = 0;
+
+  for (let i = 0; i < height; i += hypY * 2 - hexagonInnerRectH) {
+    for (let j = 0; j < width; j += hypX * 2 - 2 * (hypX - hexagonInnerRectW)) {
       let vertices = getPolygonCoords([j, i], [hypX, hypY], angle);
+      const gap = vertices[1][0] - j;
       hexagons.push({
         center: [j, i],
         vertices: vertices,
