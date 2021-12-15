@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   loadImage,
   getPolyVertices,
@@ -30,7 +30,25 @@ export const useFilterFrame = (
   type ImageRendererType = ReturnType<typeof setupImageRenderer>;
   const imageRendererObj = useRef<ImageRendererType | null>(null);
   const imageRef = useRef<HTMLImageElement | null>(null);
-  const polygons = useRef<Polygon[]>([]);
+  const canvasPolygons = useRef<Polygon[]>([]);
+  const imagePolygons = useRef<Polygon[]>([]);
+  const rectWRatio = useRef(0);
+  const rectHRatio = useRef(0);
+  const canvasW = useRef(0);
+  const canvasH = useRef(0);
+
+  useEffect(() => {
+    const gl = canvasRef.current?.getContext("webgl");
+    if (gl && canvasRef.current) {
+      const canvas = canvasRef.current;
+      const rect = canvas.getBoundingClientRect();
+      canvasW.current = canvasW.current || canvas.width;
+      canvasH.current = canvasH.current || canvas.height;
+      rectWRatio.current = rect.width / canvasW.current;
+      rectHRatio.current = rect.height / canvasH.current;
+    }
+  }, []);
+
   const renderFrame = (imageUrl: string) =>
     new Promise(async (resolve, reject) => {
       const [image, error] = await loadImage(imageUrl);
@@ -40,15 +58,32 @@ export const useFilterFrame = (
       }
       const gl = canvasRef.current?.getContext("webgl");
       if (image && gl && canvasRef.current) {
+        const angle = 60;
+        const dpr = window.devicePixelRatio;
         const canvas = canvasRef.current;
-
+        /////////////////////////////////////////////////
         imageRendererObj.current = setupImageRenderer(gl, image, canvas);
+        const idealHypX = (canvasW.current / 8) * dpr * rectWRatio.current;
+        const idealHypY = 15 * dpr * rectHRatio.current;
 
-        polygons.current = splitRectangeIntoHexagons(
+        const hypX = getValueClosestTo(idealHypX, canvas.width);
+        const hypY = getValueClosestTo(idealHypY, canvas.height);
+
+        canvasPolygons.current = splitRectangeIntoHexagons(
           canvas.width,
           canvas.height,
-          100,
-          60
+          [hypX, hypY],
+          angle
+        );
+
+        imagePolygons.current = splitRectangeIntoHexagons(
+          image.width,
+          image.height,
+          [
+            hypX * (image.width / canvas.width),
+            hypY * (image.height / canvas.height),
+          ],
+          angle
         );
 
         const { drawWithKernel, setFramebuffer, setVertices, setGreyscale } =
@@ -132,29 +167,48 @@ export const useFilterFrame = (
           // const x = 300;
           // const y = 400;
 
-          for (let i = 0; i < polygons.current.length; i++) {
+          for (let i = 0; i < canvasPolygons.current.length; i++) {
             /////////////////////////////////////////
-            const x = polygons.current[i].center[0];
-            const y = polygons.current[i].center[1];
+            // const x = polygons.current[i].center[0];
+            // const y = polygons.current[i].center[1];
             // const hyp = 100;
-            const hypX = getValueClosestTo(idealHyp, canvas.width);
-            const hypY = getValueClosestTo(idealHyp, canvas.height);
-            const angle = 60;
+            // const hypX = getValueClosestTo(idealHyp, canvas.width);
+            // const hypY = getValueClosestTo(idealHyp, canvas.height);
+            // const angle = 60;
 
-            const canvasVertices = getPolyVertices([x, y], [hypX, hypY], angle);
-            const imageVertices = getPolyVertices(
-              [
-                x * (image.width / canvas.width),
-                y * (image.height / canvas.height),
-              ],
-              [
-                hypX * (image.width / canvas.width),
-                hypY * (image.height / canvas.height),
-              ],
-              angle
-            );
+            // const canvasVertices = getPolyVertices([x, y], [hypX, hypY], angle);
+            // const imageVertices = getPolyVertices(
+            //   [
+            //     x * (image.width / canvas.width),
+            //     y * (image.height / canvas.height),
+            //   ],
+            //   [
+            //     hypX * (image.width / canvas.width),
+            //     hypY * (image.height / canvas.height),
+            //   ],
+            //   angle
+            // );
+
+            // const canvasVertices = splitRectangeIntoHexagons(
+            //   canvas.width,
+            //   canvas.height,
+            //   [hypX, hypY],
+            //   angle
+            // );
+            // const imageVertices = splitRectangeIntoHexagons(
+            //   image.width,
+            //   image.height,
+            //   [
+            //     hypX * (image.width / canvas.width),
+            //     hypY * (image.height / canvas.height),
+            //   ],
+            //   angle
+            // );
             /////////////////////////////////////////
-            setVertices(canvasVertices, imageVertices);
+            setVertices(
+              canvasPolygons.current[i].vsVertices,
+              imagePolygons.current[i].vsVertices
+            );
 
             const [textures, frameBuffers, configs] =
               createTexturesWithFrameBuffers(gl, [
@@ -178,7 +232,7 @@ export const useFilterFrame = (
 
               drawWithKernel(
                 getConvolutionKernel(filter),
-                canvasVertices.length / 2
+                canvasPolygons.current[i].vsVertices.length / 2
               );
 
               gl.bindTexture(gl.TEXTURE_2D, textures[index % 2]);
@@ -191,7 +245,7 @@ export const useFilterFrame = (
 
             drawWithKernel(
               getConvolutionKernel("NORMAL"),
-              canvasVertices.length / 2
+              canvasPolygons.current[i].vsVertices.length / 2
             );
             /////////////////////////////////////////
           }

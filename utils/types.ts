@@ -4,6 +4,6 @@ export type ConditionalClass = [boolean, ...(string | ConditionalClass)[]];
 
 export interface Polygon {
   center: Point;
-  vertices: Point[];
+  vertices: number[];
   vsVertices: number[];
 }
