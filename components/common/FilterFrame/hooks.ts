@@ -64,7 +64,7 @@ export const useFilterFrame = (
         /////////////////////////////////////////////////
         imageRendererObj.current = setupImageRenderer(gl, image, canvas);
         const idealHypX = (canvasW.current / 8) * dpr * rectWRatio.current;
-        const idealHypY = 15 * dpr * rectHRatio.current;
+        const idealHypY = (canvasH.current / 12) * dpr * rectHRatio.current;
 
         const hypX = getValueClosestTo(idealHypX, canvas.width);
         const hypY = getValueClosestTo(idealHypY, canvas.height);

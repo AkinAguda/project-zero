@@ -193,6 +193,22 @@ export const convertPolyVerticesToTriangles = (
   return [...point1, ...center, ...point2];
 };
 
+export const convertPolyCoordsToVSCoords = (
+  center: Point,
+  coords: number[]
+) => {
+  let result = [];
+  for (let i = 0; i < coords.length - 2; i += 2) {
+    result.push(coords[i]);
+    result.push(coords[i + 1]);
+    result.push(center[0]);
+    result.push(center[1]);
+    result.push(coords[i + 2]);
+    result.push(coords[i + 3]);
+  }
+  return result;
+};
+
 export const getValueClosestTo = (value: number, total: number): number => {
   const count = total / (value * 2);
   return total / Math.round(count) / 2;
@@ -214,23 +230,10 @@ export const splitRectangeIntoHexagons = (
   let hypY = hyp[1];
 
   const newHypX = hypX / Math.cos(angleInRadians(90 - angle));
+  const nY = Math.sin(angleInRadians(90 - angle)) * hypY;
+  let yCount = height / hyp[1];
 
-  // let tp = quadrantFuncs[0]([0, 0], [hypX, hypY], 60);
-
-  // let thW = tp[0];
-  // let tG = hypX - thW;
-
-  // hypX += tG;
-
-  // let firstPoint = quadrantFuncs[0]([0, 0], [newHypX, hypY], 60);
-
-  // Half the height of the rectange generated within a hexagon
-  // let hexagonInnerRectH = hypY - firstPoint[1];
-
-  // Half the width of the rectange generated within a hexagon
-  let hexagonInnerRectW = hypX;
-
-  let xGap = newHypX - hexagonInnerRectW;
+  let xGap = newHypX - hypX;
 
   const generatwFirstRow = () => {
     let i = 0;
@@ -239,42 +242,58 @@ export const splitRectangeIntoHexagons = (
     let xIndent = 0;
     while (i < count) {
       let vertices = getPolygonCoords([xIndent, y], [newHypX, hypY], angle);
+      if (i === 0) {
+        hexagons.push({
+          center: [xIndent, y],
+          vertices: vertices,
+          vsVertices: getShaderPolyVertexCoords([xIndent, y], vertices),
+        });
+      } else if (i === count - 1) {
+        hexagons.push({
+          center: [xIndent, y],
+          vertices: vertices,
+          vsVertices: getShaderPolyVertexCoords([xIndent, y], vertices),
+        });
+      } else {
+        hexagons.push({
+          center: [xIndent, y],
+          vertices: vertices,
+          vsVertices: getShaderPolyVertexCoords([xIndent, y], vertices),
+        });
+      }
+      xIndent = calculateXJumps(xIndent, newHypX, xGap);
+      i++;
+    }
+  };
+
+  const generatwRow = (center: Point, normal = false) => {
+    let i = 0;
+    const y = center[1];
+    let count = Math.ceil(width / hypX / 2);
+    if (!normal) count += 1;
+    let xIndent = hypX;
+    if (!normal) {
+      xIndent = 0;
+    }
+    while (i < count) {
+      let vertices = getPolygonCoords([xIndent, y], [newHypX, hypY], angle);
       hexagons.push({
         center: [xIndent, y],
         vertices: vertices,
         vsVertices: getShaderPolyVertexCoords([xIndent, y], vertices),
       });
+
       xIndent = calculateXJumps(xIndent, newHypX, xGap);
       i++;
     }
   };
 
   generatwFirstRow();
-  // const xCount = width / (hypX * 2);
 
-  // for (let i = 0; i < height; i += hypY * 2 - hexagonInnerRectH) {
-  //   for (let j = 0; j < width; j += hypX * 2 - 2 * (hypX - hexagonInnerRectW)) {
-  //     let vertices = getPolygonCoords([j, i], [hypX, hypY], angle);
-  //     // const gap = vertices[1][0] - j;
-  //     hexagons.push({
-  //       center: [j, i],
-  //       vertices: vertices,
-  //       vsVertices: getShaderPolyVertexCoords([j, i], vertices),
-  //     });
-  //   }
-  // }
-
-  // FIRST ROW
-  // let i = 0;
-  // for (let j = 0; j <= width; j = calculateXJumps(j, hypX, xGap)) {
-  // let vertices = getPolygonCoords([j, i], [hypX, hypY], angle);
-  // const gap = vertices[1][0] - j;
-  // hexagons.push({
-  //   center: [j, i],
-  //   vertices: vertices,
-  //   vsVertices: getShaderPolyVertexCoords([j, i], vertices),
-  // });
-  // }
+  for (let l = 1; l < yCount / 2; l++) {
+    const newY = l * (hypY + nY);
+    generatwRow([0, newY], !!(l % 2));
+  }
 
   return hexagons;
 };
