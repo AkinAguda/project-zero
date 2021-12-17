@@ -61,7 +61,6 @@ export const useFilterFrame = (
         const angle = 60;
         const dpr = window.devicePixelRatio;
         const canvas = canvasRef.current;
-        /////////////////////////////////////////////////
         imageRendererObj.current = setupImageRenderer(gl, image, canvas);
         const idealHypX = (canvasW.current / 8) * dpr * rectWRatio.current;
         const idealHypY = (canvasH.current / 12) * dpr * rectHRatio.current;
@@ -162,49 +161,9 @@ export const useFilterFrame = (
 
           setGreyscale(0.0);
 
-          const idealHyp = 100;
           const canvas = canvasRef.current!;
-          // const x = 300;
-          // const y = 400;
 
           for (let i = 0; i < canvasPolygons.current.length; i++) {
-            /////////////////////////////////////////
-            // const x = polygons.current[i].center[0];
-            // const y = polygons.current[i].center[1];
-            // const hyp = 100;
-            // const hypX = getValueClosestTo(idealHyp, canvas.width);
-            // const hypY = getValueClosestTo(idealHyp, canvas.height);
-            // const angle = 60;
-
-            // const canvasVertices = getPolyVertices([x, y], [hypX, hypY], angle);
-            // const imageVertices = getPolyVertices(
-            //   [
-            //     x * (image.width / canvas.width),
-            //     y * (image.height / canvas.height),
-            //   ],
-            //   [
-            //     hypX * (image.width / canvas.width),
-            //     hypY * (image.height / canvas.height),
-            //   ],
-            //   angle
-            // );
-
-            // const canvasVertices = splitRectangeIntoHexagons(
-            //   canvas.width,
-            //   canvas.height,
-            //   [hypX, hypY],
-            //   angle
-            // );
-            // const imageVertices = splitRectangeIntoHexagons(
-            //   image.width,
-            //   image.height,
-            //   [
-            //     hypX * (image.width / canvas.width),
-            //     hypY * (image.height / canvas.height),
-            //   ],
-            //   angle
-            // );
-            /////////////////////////////////////////
             setVertices(
               canvasPolygons.current[i].vsVertices,
               imagePolygons.current[i].vsVertices
@@ -247,7 +206,6 @@ export const useFilterFrame = (
               getConvolutionKernel("NORMAL"),
               canvasPolygons.current[i].vsVertices.length / 2
             );
-            /////////////////////////////////////////
           }
         }
         resolve("TRANSITIONED");

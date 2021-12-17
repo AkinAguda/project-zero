@@ -231,40 +231,11 @@ export const splitRectangeIntoHexagons = (
 
   const newHypX = hypX / Math.cos(angleInRadians(90 - angle));
   const nY = Math.sin(angleInRadians(90 - angle)) * hypY;
-  let yCount = height / hyp[1];
+  const yCount = Math.round(height / (hyp[1] + nY)) * 2 + 0.5;
+
+  console.log(yCount);
 
   let xGap = newHypX - hypX;
-
-  const generatwFirstRow = () => {
-    let i = 0;
-    const y = 0;
-    const count = Math.ceil(width / hypX / 2) + 1;
-    let xIndent = 0;
-    while (i < count) {
-      let vertices = getPolygonCoords([xIndent, y], [newHypX, hypY], angle);
-      if (i === 0) {
-        hexagons.push({
-          center: [xIndent, y],
-          vertices: vertices,
-          vsVertices: getShaderPolyVertexCoords([xIndent, y], vertices),
-        });
-      } else if (i === count - 1) {
-        hexagons.push({
-          center: [xIndent, y],
-          vertices: vertices,
-          vsVertices: getShaderPolyVertexCoords([xIndent, y], vertices),
-        });
-      } else {
-        hexagons.push({
-          center: [xIndent, y],
-          vertices: vertices,
-          vsVertices: getShaderPolyVertexCoords([xIndent, y], vertices),
-        });
-      }
-      xIndent = calculateXJumps(xIndent, newHypX, xGap);
-      i++;
-    }
-  };
 
   const generatwRow = (center: Point, normal = false) => {
     let i = 0;
@@ -288,9 +259,7 @@ export const splitRectangeIntoHexagons = (
     }
   };
 
-  generatwFirstRow();
-
-  for (let l = 1; l < yCount / 2; l++) {
+  for (let l = 0; l < yCount / 2; l++) {
     const newY = l * (hypY + nY);
     generatwRow([0, newY], !!(l % 2));
   }
