@@ -12,7 +12,7 @@ import {
 } from "@hzn/utils/webgl";
 import { Point, Polygon } from "@hzn/utils/types";
 import { getConvolutionKernel, setupImageRenderer } from "./functions";
-import { FilterTypes } from "./types";
+import { FilterTypes, TransitionConfig } from "./types";
 
 /**
  * This hook is responsible for everything regarding the filter frame.
@@ -148,7 +148,7 @@ export const useFilterFrame = (
       }
     });
 
-  const transition = (finalFilters: FilterTypes[], time = 1) =>
+  const transition = (transitionConfig: TransitionConfig) =>
     new Promise((resolve, reject) => {
       const gl = canvasRef.current?.getContext("webgl");
       const image = imageRef.current!;
@@ -186,7 +186,7 @@ export const useFilterFrame = (
               image
             );
 
-            finalFilters.forEach((filter, index) => {
+            transitionConfig.filter.forEach((filter, index) => {
               setFramebuffer(frameBuffers[index % 2], configs[index % 2]);
 
               drawWithKernel(

@@ -233,8 +233,6 @@ export const splitRectangeIntoHexagons = (
   const nY = Math.sin(angleInRadians(90 - angle)) * hypY;
   const yCount = Math.round(height / (hyp[1] + nY)) * 2 + 0.5;
 
-  console.log(yCount);
-
   let xGap = newHypX - hypX;
 
   const generatwRow = (center: Point, normal = false) => {

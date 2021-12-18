@@ -15,3 +15,18 @@ export interface FilterFrameContainerProps
 export interface FilterFrameViewProps {
   canvasRef: RefObject<HTMLCanvasElement>;
 }
+
+export interface TransitionConfig {
+  /**
+   * This is the duration of the transition in milliseconds
+   */
+  duration: number;
+  /**
+   * This is an array of filters to who'se final value will be given at the end of the transition
+   */
+  filter: FilterTypes[];
+  /**
+   * This is the final greyscale intensity
+   */
+  greyscale?: number;
+}

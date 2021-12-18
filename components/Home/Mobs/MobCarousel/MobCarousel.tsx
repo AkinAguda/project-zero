@@ -4,11 +4,11 @@ import classes from "./MobCarousel.module.scss";
 
 const MobCarousel: React.FC = () => (
   <div className={classes.container}>
-    <FilterFrame filter={["NORMAL"]} greyscale={1.0} imageUrl="/behemoth.jpg" />
-    <FilterFrame filter={["NORMAL"]} imageUrl="/tallneck.jpg" />
+    {/* <FilterFrame filter={["NORMAL"]} greyscale={1.0} imageUrl="/behemoth.jpg" /> */}
+    {/* <FilterFrame filter={["NORMAL"]} imageUrl="/tallneck.jpg" /> */}
     <FilterFrame
       filter={["NORMAL"]}
-      greyscale={1.0}
+      // greyscale={1.0}
       imageUrl="/stormbird.jpg"
     />
   </div>
