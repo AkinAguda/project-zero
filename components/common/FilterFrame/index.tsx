@@ -13,15 +13,17 @@ const FilterFrameontainer: React.FC<FilterFrameContainerProps> = ({
     greyscale
   );
   useEffect(() => {
-    renderFrame(imageUrl).then(() =>
-      setTimeout(() => {
-        transition({
-          filter: ["NORMAL"],
-          duration: 50000,
-          greyscale: 1.0,
-        }).then((v) => console.log(v));
-      }, 0)
-    );
+    renderFrame(imageUrl)
+      .then((v) => console.log(v))
+      .then(() =>
+        setTimeout(() => {
+          transition({
+            filter: ["NORMAL"],
+            duration: 50000,
+            greyscale: 1.0,
+          }).then((v) => console.log(v));
+        }, 0)
+      );
   }, [renderFrame, imageUrl, transition]);
   return <FilterFrame canvasRef={canvasRef} />;
 };
