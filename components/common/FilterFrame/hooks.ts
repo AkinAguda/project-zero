@@ -11,7 +11,7 @@ import {
   getRectangleVertices,
   TextureConfig,
 } from "@hzn/utils/webgl";
-import { Point, Polygon } from "@hzn/utils/types";
+import { Polygon } from "@hzn/utils/types";
 import { getConvolutionKernel, setupImageRenderer } from "./functions";
 import { FilterTypes, TransitionConfig } from "./types";
 
@@ -37,7 +37,8 @@ export const useFilterFrame = (
   const rectHRatio = useRef(0);
   const canvasW = useRef(0);
   const canvasH = useRef(0);
-  const frameBuffer = useRef<WebGLFramebuffer | null>();
+  const storedFB = useRef<WebGLFramebuffer | null>(null);
+  const storedTex = useRef<WebGLTexture | null>(null);
   const texturesAndBuffers = useRef<
     [WebGLTexture[], WebGLFramebuffer[], TextureConfig[]]
   >([[], [], []]);
@@ -128,6 +129,9 @@ export const useFilterFrame = (
           image
         );
 
+        let lastFBRenderedTo = frameBuffers[0];
+        let lastTexRenderedTo = textures[0];
+
         filters.forEach((filter, index) => {
           setFramebuffer(frameBuffers[index % 2], configs[index % 2]);
 
@@ -135,9 +139,13 @@ export const useFilterFrame = (
             getConvolutionKernel(filter),
             canvasVertices.length / 2
           );
-
           gl.bindTexture(gl.TEXTURE_2D, textures[index % 2]);
+          lastFBRenderedTo = frameBuffers[index % 2];
+          lastTexRenderedTo = textures[index % 2];
         });
+
+        storedFB.current = lastFBRenderedTo;
+        storedTex.current = lastTexRenderedTo;
 
         setFramebuffer(null, { width: canvas.width, height: canvas.height });
 
@@ -171,40 +179,40 @@ export const useFilterFrame = (
 
           for (let i = 0; i < canvasPolygons.current.length / 2; i++) {
             /////////////////////////////////////////////////////////////
-            // setVertices(
-            //   canvasPolygons.current[i].vsVertices,
-            //   imagePolygons.current[i].vsVertices
-            // );
-            // const [textures, frameBuffers, configs] =
-            //   createTexturesWithFrameBuffers(gl, [
-            //     { width: canvas.width, height: canvas.height },
-            //     { width: canvas.width, height: canvas.height },
-            //   ]);
-            // createAndSetupTexture(gl);
-            // gl.texImage2D(
-            //   gl.TEXTURE_2D,
-            //   0,
-            //   gl.RGBA,
-            //   gl.RGBA,
-            //   gl.UNSIGNED_BYTE,
-            //   image
-            // );
-            // transitionConfig.filter.forEach((filter, index) => {
-            //   setFramebuffer(frameBuffers[index % 2], configs[index % 2]);
-            //   drawWithKernel(
-            //     getConvolutionKernel(filter),
-            //     canvasPolygons.current[i].vsVertices.length / 2
-            //   );
-            //   gl.bindTexture(gl.TEXTURE_2D, textures[index % 2]);
-            // });
-            // setFramebuffer(null, {
-            //   width: canvas.width,
-            //   height: canvas.height,
-            // });
-            // drawWithKernel(
-            //   getConvolutionKernel("NORMAL"),
-            //   canvasPolygons.current[i].vsVertices.length / 2
-            // );
+            setVertices(
+              canvasPolygons.current[i].vsVertices,
+              imagePolygons.current[i].vsVertices
+            );
+            const [textures, frameBuffers, configs] =
+              createTexturesWithFrameBuffers(gl, [
+                { width: canvas.width, height: canvas.height },
+                { width: canvas.width, height: canvas.height },
+              ]);
+            createAndSetupTexture(gl);
+            gl.texImage2D(
+              gl.TEXTURE_2D,
+              0,
+              gl.RGBA,
+              gl.RGBA,
+              gl.UNSIGNED_BYTE,
+              image
+            );
+            transitionConfig.filter.forEach((filter, index) => {
+              setFramebuffer(frameBuffers[index % 2], configs[index % 2]);
+              drawWithKernel(
+                getConvolutionKernel(filter),
+                canvasPolygons.current[i].vsVertices.length / 2
+              );
+              gl.bindTexture(gl.TEXTURE_2D, textures[index % 2]);
+            });
+            setFramebuffer(null, {
+              width: canvas.width,
+              height: canvas.height,
+            });
+            drawWithKernel(
+              getConvolutionKernel("NORMAL"),
+              canvasPolygons.current[i].vsVertices.length / 2
+            );
             ///////////////////////////////////////////////////////////////
           }
         }
