@@ -61,8 +61,11 @@ export const resizeCanvasToDisplaySize = (canvas: HTMLCanvasElement) => {
   return needResize;
 };
 
-export const createAndSetupTexture = (gl: WebGLRenderingContext) => {
-  const texture = gl.createTexture();
+export const createAndSetupTexture = (
+  gl: WebGLRenderingContext,
+  texture?: WebGLTexture | null
+) => {
+  texture = texture || gl.createTexture();
   gl.bindTexture(gl.TEXTURE_2D, texture);
 
   // Set up texture so we can render any size image and so we are
@@ -78,6 +81,7 @@ export const createAndSetupTexture = (gl: WebGLRenderingContext) => {
 export type TextureConfig = {
   height: number;
   width: number;
+  texture?: WebGLTexture | null;
 };
 
 export const createTexturesWithFrameBuffers = (
@@ -87,7 +91,7 @@ export const createTexturesWithFrameBuffers = (
   const textures: WebGLTexture[] = [];
   const frameBuffers: WebGLFramebuffer[] = [];
   configs.forEach((config) => {
-    const texture = createAndSetupTexture(gl);
+    const texture = createAndSetupTexture(gl, config.texture);
     if (texture) {
       textures.push(texture);
       gl.texImage2D(
