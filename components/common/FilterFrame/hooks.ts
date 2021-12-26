@@ -191,9 +191,7 @@ export const useFilterFrame = (
               configs[renderedIndex.current]
             );
             drawWithKernel(
-              getConvolutionKernel(
-                transitionConfig.filter[renderedIndex.current]
-              ),
+              getConvolutionKernel(transitionConfig.filter[j]),
               canvasPolygons.current[i].vsVertices.length / 2
             );
             gl.bindTexture(gl.TEXTURE_2D, textures[renderedIndex.current]);

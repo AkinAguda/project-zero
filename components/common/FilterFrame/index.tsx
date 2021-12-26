@@ -18,7 +18,13 @@ const FilterFrameontainer: React.FC<FilterFrameContainerProps> = ({
       .then(() =>
         setTimeout(() => {
           transition({
-            filter: ["EMBOSS"],
+            filter: [
+              "GAUSSIAN_BLUR",
+              "GAUSSIAN_BLUR",
+              "GAUSSIAN_BLUR",
+              "GAUSSIAN_BLUR",
+              "GAUSSIAN_BLUR",
+            ],
             duration: 50000,
             greyscale: 1.0,
           }).then((v) => console.log(v));
