@@ -14,6 +14,7 @@ import {
 import { Polygon } from "@hzn/utils/types";
 import { getConvolutionKernel, setupImageRenderer } from "./functions";
 import { FilterTypes, TransitionConfig } from "./types";
+import { config } from "process";
 
 /**
  * This hook is responsible for everything regarding the filter frame.
@@ -37,15 +38,18 @@ export const useFilterFrame = (
   const rectHRatio = useRef(0);
   const canvasW = useRef(0);
   const canvasH = useRef(0);
-  const storedFB = useRef<WebGLFramebuffer | null>(null);
-  const storedTex = useRef<WebGLTexture | null>(null);
+  const storedFBIndex = useRef(0);
+  const storedTexIndex = useRef(0);
+  const glRef = useRef<WebGLRenderingContext | null | undefined>(null);
   const texturesAndBuffers = useRef<
     [WebGLTexture[], WebGLFramebuffer[], TextureConfig[]]
   >([[], [], []]);
 
   useEffect(() => {
-    const gl = canvasRef.current?.getContext("webgl");
-    if (gl && canvasRef.current) {
+    glRef.current = canvasRef.current?.getContext("webgl", {
+      preserveDrawingBuffer: true,
+    });
+    if (glRef.current && canvasRef.current) {
       const canvas = canvasRef.current;
       const rect = canvas.getBoundingClientRect();
       canvasW.current = canvasW.current || canvas.width;
@@ -62,7 +66,7 @@ export const useFilterFrame = (
       if (error) {
         reject(error);
       }
-      const gl = canvasRef.current?.getContext("webgl");
+      const gl = glRef.current;
       if (image && gl && canvasRef.current) {
         const angle = 60;
         const dpr = window.devicePixelRatio;
@@ -129,23 +133,22 @@ export const useFilterFrame = (
           image
         );
 
-        let lastFBRenderedTo = frameBuffers[0];
-        let lastTexRenderedTo = textures[0];
+        let lastFBRenderedTo = 0;
+        let lastTexRenderedTo = 0;
 
         filters.forEach((filter, index) => {
           setFramebuffer(frameBuffers[index % 2], configs[index % 2]);
-
           drawWithKernel(
             getConvolutionKernel(filter),
             canvasVertices.length / 2
           );
           gl.bindTexture(gl.TEXTURE_2D, textures[index % 2]);
-          lastFBRenderedTo = frameBuffers[index % 2];
-          lastTexRenderedTo = textures[index % 2];
+          lastFBRenderedTo = index % 2;
+          lastTexRenderedTo = index % 2;
         });
 
-        storedFB.current = lastFBRenderedTo;
-        storedTex.current = lastTexRenderedTo;
+        storedFBIndex.current = lastFBRenderedTo;
+        storedTexIndex.current = lastTexRenderedTo;
 
         setFramebuffer(null, { width: canvas.width, height: canvas.height });
 
@@ -164,60 +167,54 @@ export const useFilterFrame = (
 
   const transition = (transitionConfig: TransitionConfig) =>
     new Promise((resolve, reject) => {
-      const gl = canvasRef.current?.getContext("webgl");
-      const image = imageRef.current!;
-      if (gl) {
-        if (!frameRendered.current) {
-          reject("RENDER A FRAME with renderFrame before trying to transition");
-        } else {
-          const { drawWithKernel, setFramebuffer, setVertices, setGreyscale } =
-            imageRendererObj.current!;
+      const canvas = canvasRef.current;
+      const gl = glRef.current;
+      if (canvas && gl) {
+        const { drawWithKernel, setFramebuffer, setVertices, setGreyscale } =
+          imageRendererObj.current!;
 
-          setGreyscale(transitionConfig.greyscale || 0);
+        setGreyscale(transitionConfig.greyscale || 0);
 
-          const canvas = canvasRef.current!;
+        for (let i = 0; i < canvasPolygons.current.length / 2; i++) {
+          setVertices(
+            canvasPolygons.current[i].vsVertices,
+            imagePolygons.current[i].vsVertices
+          );
 
-          for (let i = 0; i < canvasPolygons.current.length / 2; i++) {
-            /////////////////////////////////////////////////////////////
-            setVertices(
-              canvasPolygons.current[i].vsVertices,
-              imagePolygons.current[i].vsVertices
-            );
-            const [textures, frameBuffers, configs] =
-              createTexturesWithFrameBuffers(gl, [
-                { width: canvas.width, height: canvas.height },
-                { width: canvas.width, height: canvas.height },
-              ]);
-            createAndSetupTexture(gl);
-            gl.texImage2D(
-              gl.TEXTURE_2D,
-              0,
-              gl.RGBA,
-              gl.RGBA,
-              gl.UNSIGNED_BYTE,
-              image
-            );
-            transitionConfig.filter.forEach((filter, index) => {
-              setFramebuffer(frameBuffers[index % 2], configs[index % 2]);
-              drawWithKernel(
-                getConvolutionKernel(filter),
-                canvasPolygons.current[i].vsVertices.length / 2
-              );
-              gl.bindTexture(gl.TEXTURE_2D, textures[index % 2]);
-            });
-            setFramebuffer(null, {
-              width: canvas.width,
-              height: canvas.height,
-            });
-            drawWithKernel(
-              getConvolutionKernel("NORMAL"),
-              canvasPolygons.current[i].vsVertices.length / 2
-            );
-            ///////////////////////////////////////////////////////////////
-          }
+          const [textures, frameBuffers, configs] = texturesAndBuffers.current;
+
+          let iToggler = [1, 0];
+          let currentIndex = storedFBIndex.current;
+          let lastFBRenderedTo = 0;
+          let lastTexRenderedTo = 0;
+          ////////// Checking if rendered index is 0
+          // transitionConfig.filter.forEach((filter) => {
+          //   setFramebuffer(frameBuffers[currentIndex], configs[currentIndex]);
+          //   drawWithKernel(
+          //     getConvolutionKernel(filter),
+          //     canvasPolygons.current[i].vsVertices.length / 2
+          //   );
+          //   lastFBRenderedTo = currentIndex;
+          //   lastTexRenderedTo = currentIndex;
+          //   currentIndex = iToggler[currentIndex];
+          // });
+
+          // gl.bindTexture(gl.TEXTURE_2D, textures[iToggler[currentIndex]]);
+
+          storedFBIndex.current = lastFBRenderedTo;
+          storedTexIndex.current = lastTexRenderedTo;
+
+          // setFramebuffer(null, { width: canvas.width, height: canvas.height });
+
+          drawWithKernel(
+            getConvolutionKernel("NORMAL"),
+            canvasPolygons.current[i].vsVertices.length / 2
+          );
+          console.log("flem");
+          /////////
         }
-        resolve("TRANSITIONED");
       }
+      resolve("TRANSITIONED");
     });
 
   return {

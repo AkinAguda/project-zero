@@ -134,6 +134,7 @@ export const setupImageRenderer = (
 
   const textureSize = gl.getUniformLocation(program, "u_textureSize");
   gl.uniform2f(textureSize, image.width, image.height);
+  gl.uniform2f(imageResolutionUniformLocation, image.width, image.height);
 
   const setVertices = (aPosition: number[], aTexCoord: number[]) => {
     const positionLocation = gl.getAttribLocation(program, "a_position");
@@ -150,8 +151,6 @@ export const setupImageRenderer = (
     gl.enableVertexAttribArray(textureLocation);
     gl.vertexAttribPointer(textureLocation, 2, gl.FLOAT, false, 0, 0);
   };
-
-  gl.uniform2f(imageResolutionUniformLocation, image.width, image.height);
 
   const setFramebuffer = (
     frameBuffer: WebGLFramebuffer | null,
