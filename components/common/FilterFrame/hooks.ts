@@ -38,8 +38,7 @@ export const useFilterFrame = (
   const rectHRatio = useRef(0);
   const canvasW = useRef(0);
   const canvasH = useRef(0);
-  const storedFBIndex = useRef(0);
-  const storedTexIndex = useRef(0);
+  const renderedIndex = useRef(0);
   const glRef = useRef<WebGLRenderingContext | null | undefined>(null);
   const texturesAndBuffers = useRef<
     [WebGLTexture[], WebGLFramebuffer[], TextureConfig[]]
@@ -133,9 +132,6 @@ export const useFilterFrame = (
           image
         );
 
-        let lastFBRenderedTo = 0;
-        let lastTexRenderedTo = 0;
-
         filters.forEach((filter, index) => {
           setFramebuffer(frameBuffers[index % 2], configs[index % 2]);
           drawWithKernel(
@@ -143,12 +139,8 @@ export const useFilterFrame = (
             canvasVertices.length / 2
           );
           gl.bindTexture(gl.TEXTURE_2D, textures[index % 2]);
-          lastFBRenderedTo = index % 2;
-          lastTexRenderedTo = index % 2;
+          renderedIndex.current = index % 2;
         });
-
-        storedFBIndex.current = lastFBRenderedTo;
-        storedTexIndex.current = lastTexRenderedTo;
 
         setFramebuffer(null, { width: canvas.width, height: canvas.height });
 
@@ -169,49 +161,51 @@ export const useFilterFrame = (
     new Promise((resolve, reject) => {
       const canvas = canvasRef.current;
       const gl = glRef.current;
+      const toggler = [1, 0]; // Used when ping ponging between textures
       if (canvas && gl) {
         const { drawWithKernel, setFramebuffer, setVertices, setGreyscale } =
           imageRendererObj.current!;
 
         setGreyscale(transitionConfig.greyscale || 0);
+        const [textures, frameBuffers, configs] = texturesAndBuffers.current;
 
         for (let i = 0; i < canvasPolygons.current.length / 2; i++) {
           setVertices(
             canvasPolygons.current[i].vsVertices,
             imagePolygons.current[i].vsVertices
           );
+          createAndSetupTexture(gl);
 
-          const [textures, frameBuffers, configs] = texturesAndBuffers.current;
+          gl.texImage2D(
+            gl.TEXTURE_2D,
+            0,
+            gl.RGBA,
+            gl.RGBA,
+            gl.UNSIGNED_BYTE,
+            imageRef.current!
+          );
 
-          let iToggler = [1, 0];
-          let currentIndex = storedFBIndex.current;
-          let lastFBRenderedTo = 0;
-          let lastTexRenderedTo = 0;
-          ////////// Checking if rendered index is 0
-          // transitionConfig.filter.forEach((filter) => {
-          //   setFramebuffer(frameBuffers[currentIndex], configs[currentIndex]);
-          //   drawWithKernel(
-          //     getConvolutionKernel(filter),
-          //     canvasPolygons.current[i].vsVertices.length / 2
-          //   );
-          //   lastFBRenderedTo = currentIndex;
-          //   lastTexRenderedTo = currentIndex;
-          //   currentIndex = iToggler[currentIndex];
-          // });
+          for (let j = 0; j < transitionConfig.filter.length; j++) {
+            setFramebuffer(
+              frameBuffers[renderedIndex.current],
+              configs[renderedIndex.current]
+            );
+            drawWithKernel(
+              getConvolutionKernel(
+                transitionConfig.filter[renderedIndex.current]
+              ),
+              canvasPolygons.current[i].vsVertices.length / 2
+            );
+            gl.bindTexture(gl.TEXTURE_2D, textures[renderedIndex.current]);
+            renderedIndex.current = toggler[renderedIndex.current];
+          }
 
-          // gl.bindTexture(gl.TEXTURE_2D, textures[iToggler[currentIndex]]);
-
-          storedFBIndex.current = lastFBRenderedTo;
-          storedTexIndex.current = lastTexRenderedTo;
-
-          // setFramebuffer(null, { width: canvas.width, height: canvas.height });
+          setFramebuffer(null, { width: canvas.width, height: canvas.height });
 
           drawWithKernel(
             getConvolutionKernel("NORMAL"),
             canvasPolygons.current[i].vsVertices.length / 2
           );
-          console.log("flem");
-          /////////
         }
       }
       resolve("TRANSITIONED");

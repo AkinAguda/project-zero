@@ -18,7 +18,7 @@ const FilterFrameontainer: React.FC<FilterFrameContainerProps> = ({
       .then(() =>
         setTimeout(() => {
           transition({
-            filter: ["NORMAL", "EMBOSS"],
+            filter: ["EMBOSS"],
             duration: 50000,
             greyscale: 1.0,
           }).then((v) => console.log(v));
