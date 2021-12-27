@@ -1,3 +1,1 @@
-import FilterFrame from "./FilterFrame";
-
-export { FilterFrame };
+export const F = "F";

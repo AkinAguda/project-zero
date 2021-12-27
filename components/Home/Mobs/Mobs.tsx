@@ -1,6 +1,6 @@
 import React from "react";
 import LogoSvg from "@hzn/svgs/logo.svg";
-import MobCarousel from "./MobCarousel/MobCarousel";
+import MobCarousel from "./MobCarousel";
 import classes from "./Mobs.module.scss";
 import { mergeClasses } from "@hzn/utils/functions";
 

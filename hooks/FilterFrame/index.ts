@@ -14,7 +14,6 @@ import {
 import { Polygon } from "@hzn/utils/types";
 import { getConvolutionKernel, setupImageRenderer } from "./functions";
 import { Filter, TransitionConfig } from "./types";
-import { config } from "process";
 
 /**
  * This hook is responsible for everything regarding the filter frame.
@@ -214,3 +213,5 @@ export const useFilterFrame = (selectedFilter: Filter[], greyScale = 0) => {
     transition,
   };
 };
+
+export type FilterFrameType = ReturnType<typeof useFilterFrame>;

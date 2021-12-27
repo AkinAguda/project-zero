@@ -1,4 +1,5 @@
 import { RefObject } from "react";
+import { FilterFrameType } from ".";
 
 export type FilterTypes = "EMBOSS" | "GAUSSIAN_BLUR" | "UNSHARPEN" | "NORMAL";
 
@@ -7,19 +8,19 @@ export interface Filter {
   intensity?: number;
 }
 
-export interface FilterFrameContainerProps
+interface FilterFrameCommonProps
   extends React.DetailedHTMLProps<
     React.CanvasHTMLAttributes<HTMLCanvasElement>,
     HTMLCanvasElement
   > {
-  filters: Filter[];
-  imageUrl: string;
-  greyscale?: number;
-}
-
-export interface FilterFrameViewProps {
   canvasRef: RefObject<HTMLCanvasElement>;
 }
+
+export interface FilterFrameContainerProps extends FilterFrameCommonProps {
+  state: FilterFrameType;
+}
+
+export interface FilterFrameViewProps extends FilterFrameCommonProps {}
 
 export interface TransitionConfig {
   /**

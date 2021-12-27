@@ -1,12 +1,16 @@
 import React from "react";
-import { FilterFrame } from "@hzn/common";
+import CarouselItem from "./CarouselItem";
+import { MobCarouselViewProps } from "./types";
 import classes from "./MobCarousel.module.scss";
 
-const MobCarousel: React.FC = () => (
+const MobCarousel: React.FC<MobCarouselViewProps> = ({ mobsFilters, mobs }) => (
   <div className={classes.container}>
-    {/* <FilterFrame filter={["NORMAL"]} greyscale={1.0} imageUrl="/behemoth.jpg" /> */}
-    {/* <FilterFrame filter={["NORMAL"]} imageUrl="/tallneck.jpg" /> */}
-    <FilterFrame filters={[{ type: "NORMAL" }]} imageUrl="/stormbird.jpg" />
+    {mobsFilters &&
+      mobsFilters.map((mobFilters, index) => (
+        <React.Fragment key={mobs[index].name}>
+          <CarouselItem mob={mobs[index]} filters={mobFilters} />
+        </React.Fragment>
+      ))}
   </div>
 );
 

@@ -5,16 +5,10 @@
   justify-content: center;
   width: 100%;
   gap: 20px;
-  & > :nth-child(even) {
+  & > *,
+  & > * > * {
+    border-radius: 12px;
     height: 500px;
     width: 250px;
-    border: 3.2px solid var(--blue-1);
-    box-shadow: 0px 44px 120px var(--blue-2);
-    border-radius: 12px;
-  }
-  & > :nth-child(odd) {
-    height: 463px;
-    width: 250px;
-    border-radius: 12px;
   }
 }
