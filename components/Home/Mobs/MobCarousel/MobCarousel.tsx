@@ -6,7 +6,7 @@ const MobCarousel: React.FC = () => (
   <div className={classes.container}>
     {/* <FilterFrame filter={["NORMAL"]} greyscale={1.0} imageUrl="/behemoth.jpg" /> */}
     {/* <FilterFrame filter={["NORMAL"]} imageUrl="/tallneck.jpg" /> */}
-    <FilterFrame filter={["NORMAL"]} imageUrl="/stormbird.jpg" />
+    <FilterFrame filters={[{ type: "NORMAL" }]} imageUrl="/stormbird.jpg" />
   </div>
 );
 

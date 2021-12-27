@@ -13,7 +13,7 @@ import {
 } from "@hzn/utils/webgl";
 import { Polygon } from "@hzn/utils/types";
 import { getConvolutionKernel, setupImageRenderer } from "./functions";
-import { FilterTypes, TransitionConfig } from "./types";
+import { Filter, TransitionConfig } from "./types";
 import { config } from "process";
 
 /**
@@ -22,13 +22,10 @@ import { config } from "process";
  * @param selectedFilter This is the filter you want frame to have
  * @returns
  */
-export const useFilterFrame = (
-  selectedFilter: FilterTypes[],
-  greyScale = 0
-) => {
+export const useFilterFrame = (selectedFilter: Filter[], greyScale = 0) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const frameRendered = useRef(false);
-  const [filters, setFilters] = useState<FilterTypes[]>(selectedFilter);
+  const [filters, setFilters] = useState<Filter[]>(selectedFilter);
   type ImageRendererType = ReturnType<typeof setupImageRenderer>;
   const imageRendererObj = useRef<ImageRendererType | null>(null);
   const imageRef = useRef<HTMLImageElement | null>(null);
@@ -145,7 +142,7 @@ export const useFilterFrame = (
         setFramebuffer(null, { width: canvas.width, height: canvas.height });
 
         drawWithKernel(
-          getConvolutionKernel("NORMAL"),
+          getConvolutionKernel({ type: "NORMAL" }),
           canvasVertices.length / 2
         );
 
@@ -185,13 +182,13 @@ export const useFilterFrame = (
             imageRef.current!
           );
 
-          for (let j = 0; j < transitionConfig.filter.length; j++) {
+          for (let j = 0; j < transitionConfig.filters.length; j++) {
             setFramebuffer(
               frameBuffers[renderedIndex.current],
               configs[renderedIndex.current]
             );
             drawWithKernel(
-              getConvolutionKernel(transitionConfig.filter[j]),
+              getConvolutionKernel(transitionConfig.filters[j]),
               canvasPolygons.current[i].vsVertices.length / 2
             );
             gl.bindTexture(gl.TEXTURE_2D, textures[renderedIndex.current]);
@@ -201,7 +198,7 @@ export const useFilterFrame = (
           setFramebuffer(null, { width: canvas.width, height: canvas.height });
 
           drawWithKernel(
-            getConvolutionKernel("NORMAL"),
+            getConvolutionKernel({ type: "NORMAL" }),
             canvasPolygons.current[i].vsVertices.length / 2
           );
         }

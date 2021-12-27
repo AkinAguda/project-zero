@@ -5,10 +5,10 @@ import {
   // setRectangle,
   TextureConfig,
 } from "@hzn/utils/webgl";
-import { FilterTypes } from "./types";
+import { Filter } from "./types";
 
-export const getConvolutionKernel = (filter: FilterTypes): number[] => {
-  switch (filter) {
+export const getConvolutionKernel = (filter: Filter): number[] => {
+  switch (filter.type) {
     case "NORMAL":
       return [0, 0, 0, 0, 1, 0, 0, 0, 0];
     case "GAUSSIAN_BLUR":

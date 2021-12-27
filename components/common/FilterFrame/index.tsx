@@ -5,11 +5,11 @@ import FilterFrame from "./FilterFrame";
 
 const FilterFrameontainer: React.FC<FilterFrameContainerProps> = ({
   imageUrl,
-  filter,
+  filters,
   greyscale,
 }) => {
   const { canvasRef, renderFrame, transition } = useFilterFrame(
-    filter,
+    filters,
     greyscale
   );
   useEffect(() => {
@@ -18,13 +18,7 @@ const FilterFrameontainer: React.FC<FilterFrameContainerProps> = ({
       .then(() =>
         setTimeout(() => {
           transition({
-            filter: [
-              "GAUSSIAN_BLUR",
-              "GAUSSIAN_BLUR",
-              "GAUSSIAN_BLUR",
-              "GAUSSIAN_BLUR",
-              "GAUSSIAN_BLUR",
-            ],
+            filters: [{ type: "GAUSSIAN_BLUR", intensity: 1 }],
             duration: 50000,
             greyscale: 1.0,
           }).then((v) => console.log(v));

@@ -2,12 +2,17 @@ import { RefObject } from "react";
 
 export type FilterTypes = "EMBOSS" | "GAUSSIAN_BLUR" | "UNSHARPEN" | "NORMAL";
 
+export interface Filter {
+  type: FilterTypes;
+  intensity?: number;
+}
+
 export interface FilterFrameContainerProps
   extends React.DetailedHTMLProps<
     React.CanvasHTMLAttributes<HTMLCanvasElement>,
     HTMLCanvasElement
   > {
-  filter: FilterTypes[];
+  filters: Filter[];
   imageUrl: string;
   greyscale?: number;
 }
@@ -24,7 +29,7 @@ export interface TransitionConfig {
   /**
    * This is an array of filters to who'se final value will be given at the end of the transition
    */
-  filter: FilterTypes[];
+  filters: Filter[];
   /**
    * This is the final greyscale intensity
    */
