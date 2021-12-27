@@ -1,9 +1,13 @@
 import React from "react";
+import { mergeClasses } from "@hzn/utils/functions";
 import { CarouselItemViewProps } from "./types";
 import classes from "./CarouselItem.module.scss";
 
-const CarouselItem: React.FC<CarouselItemViewProps> = ({ canvasRef }) => (
-  <div className={classes.container}>
+const CarouselItem: React.FC<CarouselItemViewProps> = ({
+  canvasRef,
+  active,
+}) => (
+  <div className={mergeClasses(classes.container, [active, classes.active])}>
     <canvas ref={canvasRef}></canvas>
   </div>
 );

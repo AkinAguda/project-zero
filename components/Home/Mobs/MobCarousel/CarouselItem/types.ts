@@ -1,11 +1,16 @@
 import { MobData } from "./../constants";
 import { Filter } from "@hzn/hooks/FilterFrame/types";
 
-export interface CarouselItemViewProps {
+interface CarouselItemCommonProps {
+  active: boolean;
+}
+
+export interface CarouselItemViewProps extends CarouselItemCommonProps {
   canvasRef: React.RefObject<HTMLCanvasElement>;
 }
 
-export interface CarouselItemConainerProps {
+export interface CarouselItemConainerProps extends CarouselItemCommonProps {
   mob: MobData;
   filters: Filter[];
+  greyscale?: number;
 }
