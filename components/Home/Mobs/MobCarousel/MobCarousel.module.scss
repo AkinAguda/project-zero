@@ -1,6 +1,19 @@
-.container {
-}
-
 .itemWrapper {
   padding: 100px 30px 150px 30px;
+  transition: transform 0.3s;
+  li {
+    align-self: baseline;
+  }
+}
+
+.sizeOne {
+  transform: scaleY(90%) translateY(3.5%);
+}
+
+.sizeTwo {
+  transform: scaleY(80%) translateY(7.5%);
+}
+
+.sizeThree {
+  transform: scaleY(70%) translateY(12.5%);
 }
