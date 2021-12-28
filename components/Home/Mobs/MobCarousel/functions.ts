@@ -1,5 +1,5 @@
 import { Filter } from "@hzn/hooks/FilterFrame/types";
-import { MobData } from "./constants";
+import { MobData, CAROUSEL_ITEM_WIDTH } from "./constants";
 
 export const getMiddleIndex = (length: number) => Math.floor(length / 2);
 
@@ -15,3 +15,6 @@ export const getMobsFilters = (
     }
   });
 };
+
+export const getCarouselItemWidth = () =>
+  (CAROUSEL_ITEM_WIDTH / window.innerWidth) * 100;

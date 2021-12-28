@@ -9,12 +9,13 @@
   },
   "dependencies": {
     "@hzn/common": "./components/common",
+    "@hzn/hooks": "./hooks",
     "@hzn/svgs": "./svgs",
     "@hzn/utils": "./utils",
-    "@hzn/hooks": "./hooks",
     "next": "12.0.4",
     "react": "17.0.2",
     "react-dom": "17.0.2",
+    "react-responsive-carousel": "^3.2.22",
     "sass": "^1.43.4"
   },
   "devDependencies": {

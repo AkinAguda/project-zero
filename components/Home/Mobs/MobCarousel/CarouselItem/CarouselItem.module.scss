@@ -1,5 +1,12 @@
 .container {
   position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  height: 500px;
+  width: 250px;
+  border: 3.2px solid transparent;
+  box-sizing: border-box;
+  transition: box-shadow 0.5s, border 0.5s;
   canvas {
     height: 100%;
     width: 100%;

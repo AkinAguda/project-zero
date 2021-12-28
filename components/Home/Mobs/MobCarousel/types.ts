@@ -5,4 +5,9 @@ export interface MobCarouselViewProps {
   mobsFilters: Filter[][];
   mobs: MobData[];
   activeIndex: number;
+  setActiveIndex: (index: number) => void;
+  centerSlidePercentage: number;
+  ready: boolean;
 }
+
+export type Timer = ReturnType<typeof setTimeout>;

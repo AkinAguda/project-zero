@@ -1,6 +1,6 @@
 .container {
   background-color: var(--dark-2);
-  padding: 50px 20px 140px 20px;
+  padding: 50px 0px 140px 0px;
   text-align: center;
 }
 
@@ -11,5 +11,8 @@
 
 .description {
   margin-top: 0;
-  margin-bottom: 58px;
+}
+
+.intro {
+  padding: 0 20px;
 }
