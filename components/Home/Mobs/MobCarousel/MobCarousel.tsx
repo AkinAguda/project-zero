@@ -8,7 +8,6 @@ import { MobCarouselViewProps } from "./types";
 import classes from "./MobCarousel.module.scss";
 
 const MobCarousel: React.FC<MobCarouselViewProps> = ({
-  mobsFilters,
   mobs,
   activeIndex,
   setActiveIndex,
@@ -31,24 +30,18 @@ const MobCarousel: React.FC<MobCarouselViewProps> = ({
         emulateTouch
         swipeable
       >
-        {mobsFilters &&
-          mobsFilters.map((mobFilters, index) => (
-            <React.Fragment key={mobs[index].name}>
-              <div
-                className={mergeClasses(classes.itemWrapper, [
-                  activeIndex !== index,
-                  getSizeClasses(classes, index, activeIndex),
-                ])}
-              >
-                <CarouselItem
-                  mob={mobs[index]}
-                  filters={mobFilters}
-                  active={activeIndex === index}
-                  greyscale={activeIndex !== index ? 1 : 0}
-                />
-              </div>
-            </React.Fragment>
-          ))}
+        {mobs.map((mob, index) => (
+          <React.Fragment key={mobs[index].name}>
+            <div
+              className={mergeClasses(classes.itemWrapper, [
+                activeIndex !== index,
+                getSizeClasses(classes, index, activeIndex),
+              ])}
+            >
+              <CarouselItem mob={mob} active={activeIndex === index} />
+            </div>
+          </React.Fragment>
+        ))}
       </Carousel>
     ) : (
       <></>

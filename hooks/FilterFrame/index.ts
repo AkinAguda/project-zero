@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import {
   loadImage,
-  getPolyVertices,
   getValueClosestTo,
   splitRectangeIntoHexagons,
 } from "@hzn/utils/functions";

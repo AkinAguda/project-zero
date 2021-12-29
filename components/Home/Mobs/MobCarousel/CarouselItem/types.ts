@@ -11,6 +11,4 @@ export interface CarouselItemViewProps extends CarouselItemCommonProps {
 
 export interface CarouselItemConainerProps extends CarouselItemCommonProps {
   mob: MobData;
-  filters: Filter[];
-  greyscale?: number;
 }
