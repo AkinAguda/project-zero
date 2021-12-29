@@ -4,7 +4,7 @@ export interface MobData {
   description: string;
 }
 
-export const CAROUSEL_ITEM_WIDTH = 270;
+export const CAROUSEL_ITEM_WIDTH = 280;
 
 export const MOBS: MobData[] = [
   {

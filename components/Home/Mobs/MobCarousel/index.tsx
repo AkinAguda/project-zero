@@ -19,7 +19,7 @@ const MobCarouselContainer: React.FC = () => {
       resizeTimeout.current = setTimeout(() => {
         setCenterSlidePercentage(getCarouselItemWidth());
         clearTimeout(resizeTimeout.current!);
-      }, 200);
+      }, 50);
     });
     setCenterSlidePercentage(getCarouselItemWidth());
     setReady(true);
