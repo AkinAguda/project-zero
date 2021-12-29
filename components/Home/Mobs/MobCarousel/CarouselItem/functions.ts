@@ -4,6 +4,6 @@ export const getFilterBasedOnActive = (active: boolean): Filter[] => {
   if (active) {
     return [{ type: "NORMAL" }];
   } else {
-    return [{ type: "GAUSSIAN_BLUR", intensity: 3 }];
+    return [{ type: "EMBOSS", intensity: 3 }];
   }
 };

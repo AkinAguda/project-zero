@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Filter } from "@hzn/hooks/FilterFrame/types";
 import MobCarousel from "./MobCarousel";
 import { MOBS } from "./constants";
 import { getMiddleIndex, getCarouselItemWidth } from "./functions";
