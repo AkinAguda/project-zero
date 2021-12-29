@@ -24,6 +24,7 @@ const MobCarousel: React.FC<MobCarouselViewProps> = ({
         centerSlidePercentage={centerSlidePercentage}
         onChange={setActiveIndex}
         onClickItem={setActiveIndex}
+        transitionTime={200}
         showThumbs={false}
         centerMode
         useKeyboardArrows
