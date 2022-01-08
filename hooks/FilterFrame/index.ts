@@ -13,7 +13,10 @@ import {
 } from "@hzn/utils/webgl";
 import { Polygon } from "@hzn/utils/types";
 import { getConvolutionKernel, setupImageRenderer } from "./functions";
-import { HEXAGON_DIAMETER_X, HEXAGON_DIAMETER_Y } from "./constatns";
+import {
+  HEXAGON_DIAMETER_COUNT_X,
+  HEXAGON_DIAMETER_COUNT_Y,
+} from "./constatns";
 import { Filter, TransitionConfig } from "./types";
 
 export interface InitalConfig {
@@ -74,9 +77,13 @@ export const useFilterFrame = (initialConfig: InitalConfig) => {
           const canvas = canvasRef.current;
           imageRendererObj.current = setupImageRenderer(gl, image, canvas);
           const idealHypX =
-            (canvasW.current / HEXAGON_DIAMETER_X) * dpr * rectWRatio.current;
+            (canvasW.current / HEXAGON_DIAMETER_COUNT_X) *
+            dpr *
+            rectWRatio.current;
           const idealHypY =
-            (canvasH.current / HEXAGON_DIAMETER_Y) * dpr * rectHRatio.current;
+            (canvasH.current / HEXAGON_DIAMETER_COUNT_Y) *
+            dpr *
+            rectHRatio.current;
 
           const hypX = round(getValueClosestTo(idealHypX, canvas.width), 100);
           const hypY = round(getValueClosestTo(idealHypY, canvas.height), 100);
