@@ -141,7 +141,19 @@ export const useFilterFrame = (initialConfig: InitalConfig) => {
             image
           );
 
-          initialConfig.selectedFilter.forEach((filter, index) => {
+          const expandedFilters: Filter[] = [];
+
+          initialConfig.selectedFilter.forEach((filter) => {
+            if (filter.intensity) {
+              for (let i = 0; i < filter.intensity; i++) {
+                expandedFilters.push(filter);
+              }
+            } else {
+              expandedFilters.push(filter);
+            }
+          });
+
+          expandedFilters.forEach((filter, index) => {
             drawWithFilter({
               frameBuffer: frameBuffers[index % 2],
               config: configs[index % 2],
