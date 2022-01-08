@@ -5,24 +5,6 @@ import {
   // setRectangle,
   TextureConfig,
 } from "@hzn/utils/webgl";
-import { Filter, DrawWithFilterArgs } from "./types";
-
-export const getConvolutionKernel = (filter: Filter): number[] => {
-  switch (filter.type) {
-    case "NORMAL":
-      return [0, 0, 0, 0, 1, 0, 0, 0, 0];
-    case "GAUSSIAN_BLUR":
-      return [0.045, 0.122, 0.045, 0.122, 0.332, 0.122, 0.045, 0.122, 0.045];
-    case "UNSHARPEN":
-      return [-1, -1, -1, -1, 9, -1, -1, -1, -1];
-    case "EMBOSS":
-      return [-2, -1, 0, -1, 1, 1, 0, 1, 2];
-    case "BOX_BLUR":
-      return [0.11, 0.11, 0.11, 0.11, 0.11, 0.11, 0.11, 0.11, 0.11];
-    default:
-      return [0, 0, 0, 0, 1, 0, 0, 0, 0];
-  }
-};
 
 export const setupImageRenderer = (
   gl: WebGLRenderingContext,
@@ -77,26 +59,14 @@ export const setupImageRenderer = (
 
     uniform sampler2D u_image;
     uniform vec2 u_textureSize;     
-    uniform float u_kernel[9];
-    uniform float u_kernelWeight;
     uniform float u_greyscaleFactor;
 
     varying vec2 v_texCoord;
 
     void main() {
     vec2 onePixel = vec2(1.0, 1.0) / u_textureSize;
-    vec4 colorSum =
-        texture2D(u_image, v_texCoord + onePixel * vec2(-1, -1)) * u_kernel[0] +
-        texture2D(u_image, v_texCoord + onePixel * vec2( 0, -1)) * u_kernel[1] +
-        texture2D(u_image, v_texCoord + onePixel * vec2( 1, -1)) * u_kernel[2] +
-        texture2D(u_image, v_texCoord + onePixel * vec2(-1,  0)) * u_kernel[3] +
-        texture2D(u_image, v_texCoord + onePixel * vec2( 0,  0)) * u_kernel[4] +
-        texture2D(u_image, v_texCoord + onePixel * vec2( 1,  0)) * u_kernel[5] +
-        texture2D(u_image, v_texCoord + onePixel * vec2(-1,  1)) * u_kernel[6] +
-        texture2D(u_image, v_texCoord + onePixel * vec2( 0,  1)) * u_kernel[7] +
-        texture2D(u_image, v_texCoord + onePixel * vec2( 1,  1)) * u_kernel[8] ;
     
-    vec4 rgba = (colorSum / u_kernelWeight).rgba;
+    vec4 rgba = texture2D(u_image, v_texCoord).rgba;
     float grey = 0.21 * rgba.r + 0.71 * rgba.g + 0.07 * rgba.b;
     gl_FragColor = vec4(rgba.rgb * (1.0 - u_greyscaleFactor) + (grey * u_greyscaleFactor), rgba.a);
     }
@@ -111,8 +81,6 @@ export const setupImageRenderer = (
   const program = createProgram(gl, vertexShader, fragmentShader)!;
   gl.useProgram(program);
 
-  const kernelUniformLocation = gl.getUniformLocation(program, "u_kernel");
-
   const canvasResolutionUniformLocation = gl.getUniformLocation(
     program,
     "u_canvasResolution"
@@ -126,11 +94,6 @@ export const setupImageRenderer = (
   const greyscaleFactorUniform = gl.getUniformLocation(
     program,
     "u_greyscaleFactor"
-  );
-
-  const kernelWeightUniformLocation = gl.getUniformLocation(
-    program,
-    "u_kernelWeight"
   );
 
   const textureSize = gl.getUniformLocation(program, "u_textureSize");
@@ -153,33 +116,13 @@ export const setupImageRenderer = (
     gl.vertexAttribPointer(textureLocation, 2, gl.FLOAT, false, 0, 0);
   };
 
-  const setFramebuffer = (
-    frameBuffer: WebGLFramebuffer | null,
-    config: TextureConfig
-  ) => {
+  const setupRenderer = (config: TextureConfig) => {
     const { width, height } = config;
-    // make this the framebuffer we are rendering to.
-    gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
 
     gl.uniform2f(canvasResolutionUniformLocation, width, height);
 
     // Tell webgl the viewport setting needed for framebuffer.
     gl.viewport(0, 0, width, height);
-  };
-
-  const drawWithKernel = (kernel: number[], verticesCount: number) => {
-    // set the kernel
-    gl.uniform1fv(kernelUniformLocation, kernel);
-
-    gl.uniform1f(
-      kernelWeightUniformLocation,
-      Math.min(
-        kernel.reduce((a, b) => a + b),
-        1
-      )
-    );
-    // Draw the rectangle.
-    gl.drawArrays(gl.TRIANGLES, 0, verticesCount);
   };
 
   /**
@@ -190,17 +133,9 @@ export const setupImageRenderer = (
     gl.uniform1f(greyscaleFactorUniform, value);
   };
 
-  const drawWithFilter = (args: DrawWithFilterArgs) => {
-    setFramebuffer(args.frameBuffer, args.config);
-    drawWithKernel(getConvolutionKernel(args.filter), args.polyCount);
-    gl.bindTexture(gl.TEXTURE_2D, args.texture);
-  };
-
   return {
-    drawWithKernel,
-    setFramebuffer,
+    setupRenderer,
     setVertices,
     setGreyscale,
-    drawWithFilter,
   };
 };

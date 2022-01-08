@@ -1,5 +1,4 @@
 import { MobData } from "./../constants";
-import { Filter } from "@hzn/hooks/FilterFrame/types";
 
 interface CarouselItemCommonProps {
   active: boolean;

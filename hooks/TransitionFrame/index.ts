@@ -5,23 +5,17 @@ import {
   splitRectangeIntoHexagons,
   round,
 } from "@hzn/utils/functions";
-import {
-  createAndSetupTexture,
-  createTexturesWithFrameBuffers,
-  getRectangleVertices,
-  TextureConfig,
-} from "@hzn/utils/webgl";
+import { createAndSetupTexture, getRectangleVertices } from "@hzn/utils/webgl";
 import { Polygon } from "@hzn/utils/types";
-import { getConvolutionKernel, setupImageRenderer } from "./functions";
+import { setupImageRenderer } from "./functions";
 import {
   HEXAGON_DIAMETER_COUNT_X,
   HEXAGON_DIAMETER_COUNT_Y,
 } from "./constatns";
-import { Filter, TransitionConfig } from "./types";
+import { TransitionConfig } from "./types";
 
 export interface InitalConfig {
-  selectedFilter: Filter[];
-  greyScale?: number;
+  greyScale: number;
 }
 
 /**
@@ -30,7 +24,7 @@ export interface InitalConfig {
  * @param selectedFilter This is the filter you want frame to have
  * @returns
  */
-export const useFilterFrame = (initialConfig: InitalConfig) => {
+export const useTransitionFrame = (initialConfig: InitalConfig) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const frameRendered = useRef(false);
   type ImageRendererType = ReturnType<typeof setupImageRenderer>;
@@ -42,11 +36,9 @@ export const useFilterFrame = (initialConfig: InitalConfig) => {
   const rectHRatio = useRef(0);
   const canvasW = useRef(0);
   const canvasH = useRef(0);
-  const renderedIndex = useRef(0);
   const glRef = useRef<WebGLRenderingContext | null | undefined>(null);
-  const texturesAndBuffers = useRef<
-    [WebGLTexture[], WebGLFramebuffer[], TextureConfig[]]
-  >([[], [], []]);
+  const animationframe = useRef<number>(0);
+  const animationTimeTravelled = useRef<number>(0);
 
   useEffect(() => {
     glRef.current = canvasRef.current?.getContext("webgl", {
@@ -105,13 +97,8 @@ export const useFilterFrame = (initialConfig: InitalConfig) => {
             angle
           );
 
-          const {
-            drawWithKernel,
-            setFramebuffer,
-            setVertices,
-            setGreyscale,
-            drawWithFilter,
-          } = imageRendererObj.current;
+          const { setVertices, setGreyscale, setupRenderer } =
+            imageRendererObj.current;
 
           setGreyscale(initialConfig.greyScale || 0);
 
@@ -130,13 +117,6 @@ export const useFilterFrame = (initialConfig: InitalConfig) => {
 
           setVertices(canvasVertices, imageVertices);
 
-          texturesAndBuffers.current = createTexturesWithFrameBuffers(gl, [
-            { width: canvas.width, height: canvas.height },
-            { width: canvas.width, height: canvas.height },
-          ]);
-
-          const [textures, frameBuffers, configs] = texturesAndBuffers.current;
-
           createAndSetupTexture(gl);
 
           gl.texImage2D(
@@ -148,35 +128,9 @@ export const useFilterFrame = (initialConfig: InitalConfig) => {
             image
           );
 
-          const expandedFilters: Filter[] = [];
+          setupRenderer({ width: canvas.width, height: canvas.height });
 
-          initialConfig.selectedFilter.forEach((filter) => {
-            if (filter.intensity) {
-              for (let i = 0; i < filter.intensity; i++) {
-                expandedFilters.push(filter);
-              }
-            } else {
-              expandedFilters.push(filter);
-            }
-          });
-
-          expandedFilters.forEach((filter, index) => {
-            drawWithFilter({
-              frameBuffer: frameBuffers[index % 2],
-              config: configs[index % 2],
-              filter,
-              polyCount: canvasVertices.length / 2,
-              texture: textures[index % 2],
-            });
-            renderedIndex.current = index % 2;
-          });
-
-          setFramebuffer(null, { width: canvas.width, height: canvas.height });
-
-          drawWithKernel(
-            getConvolutionKernel({ type: "NORMAL" }),
-            canvasVertices.length / 2
-          );
+          gl.drawArrays(gl.TRIANGLES, 0, canvasVertices.length / 2);
 
           frameRendered.current = true;
 
@@ -193,20 +147,13 @@ export const useFilterFrame = (initialConfig: InitalConfig) => {
       new Promise((resolve, reject) => {
         const canvas = canvasRef.current;
         const gl = glRef.current;
-        const toggler = [1, 0]; // Used when ping ponging between textures
         if (canvas && gl) {
-          const {
-            drawWithKernel,
-            setFramebuffer,
-            setVertices,
-            setGreyscale,
-            drawWithFilter,
-          } = imageRendererObj.current!;
+          const { setVertices, setGreyscale } = imageRendererObj.current!;
 
           setGreyscale(transitionConfig.greyscale || 0);
-          const [textures, frameBuffers, configs] = texturesAndBuffers.current;
 
-          for (let i = 0; i < canvasPolygons.current.length; i++) {
+          const renderPolyFrame = (i: number, greyscale: number) => {
+            setGreyscale(greyscale);
             setVertices(
               canvasPolygons.current[i].vsVertices,
               imagePolygons.current[i].vsVertices
@@ -221,28 +168,55 @@ export const useFilterFrame = (initialConfig: InitalConfig) => {
               gl.UNSIGNED_BYTE,
               imageRef.current!
             );
+          };
 
-            for (let j = 0; j < transitionConfig.filters.length; j++) {
-              drawWithFilter({
-                frameBuffer: frameBuffers[renderedIndex.current],
-                config: configs[renderedIndex.current],
-                filter: transitionConfig.filters[j],
-                texture: textures[renderedIndex.current],
-                polyCount: canvasPolygons.current[i].vsVertices.length / 2,
-              });
-              renderedIndex.current = toggler[renderedIndex.current];
-            }
+          const animate = () => {
+            const velocity =
+              (canvasPolygons.current.length - 1) / transitionConfig.duration;
+            let travelled = 0;
+            let prev: number;
 
-            setFramebuffer(null, {
-              width: canvas.width,
-              height: canvas.height,
-            });
+            const render = (time: number) => {
+              if (!prev) prev = time;
+              const dt = time - prev;
+              prev = time;
+              animationTimeTravelled.current += dt;
 
-            drawWithKernel(
-              getConvolutionKernel({ type: "NORMAL" }),
-              canvasPolygons.current[i].vsVertices.length / 2
-            );
-          }
+              // Goal is to cover canvasPolygons.current.length in timeframe
+              const distanceNow = velocity * dt + travelled;
+              const real = Math.floor(distanceNow);
+              const fract = distanceNow - Math.floor(distanceNow);
+
+              //////////////////////////
+              const travelledReal = Math.floor(travelled);
+              if (travelledReal < real) {
+                for (let i = travelledReal; i < real; i++) {
+                  renderPolyFrame(i, transitionConfig.greyscale || 0);
+                }
+              }
+              // transitionHexagon(real, config.greyscale || 1 * fract);
+              renderPolyFrame(real, 1 - fract);
+
+              /////////////////////////
+              travelled = distanceNow;
+              //////
+              if (
+                !(
+                  Math.round(animationTimeTravelled.current) >=
+                  transitionConfig.duration
+                )
+              ) {
+                // console.log(travelled, canvasPolygons.current.length);
+                animationframe.current = window.requestAnimationFrame(render);
+              } else {
+                window.cancelAnimationFrame(animationframe.current);
+              }
+              //////
+            };
+            animationframe.current = window.requestAnimationFrame(render);
+          };
+
+          animate();
         }
         resolve("TRANSITIONED");
       }),
@@ -256,4 +230,4 @@ export const useFilterFrame = (initialConfig: InitalConfig) => {
   };
 };
 
-export type FilterFrameType = ReturnType<typeof useFilterFrame>;
+export type FilterFrameType = ReturnType<typeof useTransitionFrame>;

@@ -1,7 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { useFilterFrame, InitalConfig } from "@hzn/hooks/FilterFrame";
-import { Filter } from "@hzn/hooks/FilterFrame/types";
-import { getFilterBasedOnActive } from "./functions";
+import { useTransitionFrame, InitalConfig } from "@hzn/hooks/TransitionFrame";
 import { CarouselItemConainerProps } from "./types";
 import CarouselItem from "./CarouselItem";
 
@@ -14,9 +12,8 @@ const CarouselItemContainer: React.FC<CarouselItemConainerProps> = ({
   const firstMount = useRef(true);
   const configRef = useRef<InitalConfig>({
     greyScale: activeRef.current ? 0 : 1,
-    selectedFilter: getFilterBasedOnActive(activeRef.current),
   });
-  const { renderFrame, canvasRef, transition } = useFilterFrame(
+  const { renderFrame, canvasRef, transition } = useTransitionFrame(
     configRef.current
   );
   useEffect(() => {
@@ -29,8 +26,7 @@ const CarouselItemContainer: React.FC<CarouselItemConainerProps> = ({
     if (firstMount.current && inistalRenderFinished) {
       if (activeRef.current !== active) {
         transition({
-          duration: 3000,
-          filters: getFilterBasedOnActive(active),
+          duration: 1000,
           greyscale: active ? 0 : 1,
         });
       }

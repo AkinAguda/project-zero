@@ -1,3 +1,3 @@
-import * as filterFrame from "./FilterFrame";
+import * as transitionFrame from "./TransitionFrame";
 
-export { filterFrame };
+export { transitionFrame };
