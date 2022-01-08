@@ -1,7 +1,13 @@
 import { RefObject } from "react";
+import { TextureConfig } from "@hzn/utils/webgl";
 import { FilterFrameType } from ".";
 
-export type FilterTypes = "EMBOSS" | "GAUSSIAN_BLUR" | "UNSHARPEN" | "NORMAL";
+export type FilterTypes =
+  | "EMBOSS"
+  | "GAUSSIAN_BLUR"
+  | "UNSHARPEN"
+  | "NORMAL"
+  | "BOX_BLUR";
 
 export interface Filter {
   type: FilterTypes;
@@ -35,4 +41,12 @@ export interface TransitionConfig {
    * This is the final greyscale intensity
    */
   greyscale?: number;
+}
+
+export interface DrawWithFilterArgs {
+  frameBuffer: WebGLFramebuffer;
+  config: TextureConfig;
+  filter: Filter;
+  polyCount: number;
+  texture: WebGLTexture | null;
 }

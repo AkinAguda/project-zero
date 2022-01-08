@@ -5,7 +5,7 @@ import {
   // setRectangle,
   TextureConfig,
 } from "@hzn/utils/webgl";
-import { Filter } from "./types";
+import { Filter, DrawWithFilterArgs } from "./types";
 
 export const getConvolutionKernel = (filter: Filter): number[] => {
   switch (filter.type) {
@@ -17,7 +17,8 @@ export const getConvolutionKernel = (filter: Filter): number[] => {
       return [-1, -1, -1, -1, 9, -1, -1, -1, -1];
     case "EMBOSS":
       return [-2, -1, 0, -1, 1, 1, 0, 1, 2];
-
+    case "BOX_BLUR":
+      return [0.11, 0.11, 0.11, 0.11, 0.11, 0.11, 0.11, 0.11, 0.11];
     default:
       return [0, 0, 0, 0, 1, 0, 0, 0, 0];
   }
@@ -189,5 +190,21 @@ export const setupImageRenderer = (
     gl.uniform1f(greyscaleFactorUniform, value);
   };
 
-  return { drawWithKernel, setFramebuffer, setVertices, setGreyscale };
+  const drawWithFilter = (args: DrawWithFilterArgs) => {
+    setFramebuffer(args.frameBuffer, args.config);
+    drawWithKernel(
+      getConvolutionKernel(args.filter),
+      // canvasPolygons.current[i].vsVertices.length / 2
+      args.polyCount
+    );
+    gl.bindTexture(gl.TEXTURE_2D, args.texture);
+  };
+
+  return {
+    drawWithKernel,
+    setFramebuffer,
+    setVertices,
+    setGreyscale,
+    drawWithFilter,
+  };
 };
