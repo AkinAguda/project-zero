@@ -192,11 +192,7 @@ export const setupImageRenderer = (
 
   const drawWithFilter = (args: DrawWithFilterArgs) => {
     setFramebuffer(args.frameBuffer, args.config);
-    drawWithKernel(
-      getConvolutionKernel(args.filter),
-      // canvasPolygons.current[i].vsVertices.length / 2
-      args.polyCount
-    );
+    drawWithKernel(getConvolutionKernel(args.filter), args.polyCount);
     gl.bindTexture(gl.TEXTURE_2D, args.texture);
   };
 

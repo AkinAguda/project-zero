@@ -98,8 +98,13 @@ export const useFilterFrame = (initialConfig: InitalConfig) => {
             angle
           );
 
-          const { drawWithKernel, setFramebuffer, setVertices, setGreyscale } =
-            imageRendererObj.current;
+          const {
+            drawWithKernel,
+            setFramebuffer,
+            setVertices,
+            setGreyscale,
+            drawWithFilter,
+          } = imageRendererObj.current;
 
           setGreyscale(initialConfig.greyScale || 0);
 
@@ -137,12 +142,13 @@ export const useFilterFrame = (initialConfig: InitalConfig) => {
           );
 
           initialConfig.selectedFilter.forEach((filter, index) => {
-            setFramebuffer(frameBuffers[index % 2], configs[index % 2]);
-            drawWithKernel(
-              getConvolutionKernel(filter),
-              canvasVertices.length / 2
-            );
-            gl.bindTexture(gl.TEXTURE_2D, textures[index % 2]);
+            drawWithFilter({
+              frameBuffer: frameBuffers[index % 2],
+              config: configs[index % 2],
+              filter,
+              polyCount: canvasVertices.length / 2,
+              texture: textures[index % 2],
+            });
             renderedIndex.current = index % 2;
           });
 
@@ -170,8 +176,13 @@ export const useFilterFrame = (initialConfig: InitalConfig) => {
         const gl = glRef.current;
         const toggler = [1, 0]; // Used when ping ponging between textures
         if (canvas && gl) {
-          const { drawWithKernel, setFramebuffer, setVertices, setGreyscale } =
-            imageRendererObj.current!;
+          const {
+            drawWithKernel,
+            setFramebuffer,
+            setVertices,
+            setGreyscale,
+            drawWithFilter,
+          } = imageRendererObj.current!;
 
           setGreyscale(transitionConfig.greyscale || 0);
           const [textures, frameBuffers, configs] = texturesAndBuffers.current;
@@ -193,15 +204,13 @@ export const useFilterFrame = (initialConfig: InitalConfig) => {
             );
 
             for (let j = 0; j < transitionConfig.filters.length; j++) {
-              setFramebuffer(
-                frameBuffers[renderedIndex.current],
-                configs[renderedIndex.current]
-              );
-              drawWithKernel(
-                getConvolutionKernel(transitionConfig.filters[j]),
-                canvasPolygons.current[i].vsVertices.length / 2
-              );
-              gl.bindTexture(gl.TEXTURE_2D, textures[renderedIndex.current]);
+              drawWithFilter({
+                frameBuffer: frameBuffers[renderedIndex.current],
+                config: configs[renderedIndex.current],
+                filter: transitionConfig.filters[j],
+                texture: textures[renderedIndex.current],
+                polyCount: canvasPolygons.current[i].vsVertices.length / 2,
+              });
               renderedIndex.current = toggler[renderedIndex.current];
             }
 
