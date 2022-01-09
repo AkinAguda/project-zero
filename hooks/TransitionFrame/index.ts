@@ -148,7 +148,8 @@ export const useTransitionFrame = (initialConfig: InitalConfig) => {
         const canvas = canvasRef.current;
         const gl = glRef.current;
         if (canvas && gl) {
-          const { setVertices, setGreyscale } = imageRendererObj.current!;
+          const { setVertices, setGreyscale, setupRenderer } =
+            imageRendererObj.current!;
 
           setGreyscale(transitionConfig.greyscale || 0);
 
@@ -167,6 +168,14 @@ export const useTransitionFrame = (initialConfig: InitalConfig) => {
               gl.RGBA,
               gl.UNSIGNED_BYTE,
               imageRef.current!
+            );
+
+            setupRenderer({ width: canvas.width, height: canvas.height });
+
+            gl.drawArrays(
+              gl.TRIANGLES,
+              0,
+              canvasPolygons.current[i].vsVertices.length / 2
             );
           };
 
