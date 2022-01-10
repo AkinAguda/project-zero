@@ -284,3 +284,6 @@ export const shuffleArray = (array: any[]): any[] => {
 
   return array;
 };
+
+export const getValInRangeToOne = (start: number, end: number, value: number) =>
+  (value - start) / (end - start);

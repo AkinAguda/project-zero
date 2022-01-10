@@ -5,6 +5,7 @@ import {
   splitRectangeIntoHexagons,
   round,
   shuffleArray,
+  getValInRangeToOne,
 } from "@hzn/utils/functions";
 import { createAndSetupTexture, getRectangleVertices } from "@hzn/utils/webgl";
 import { Polygon } from "@hzn/utils/types";
@@ -226,10 +227,13 @@ export const useTransitionFrame = (initialConfig: InitalConfig) => {
                 }
               } else {
                 for (let j = 0; j < HEXAGON_TRANSITION_RATE; j++) {
-                  // transitionHexagon(i, config.greyscale);
                   renderPolyFrame(
                     randomizedIndices.current[real + j],
-                    transitionConfig.greyscale * fract
+                    getValInRangeToOne(
+                      transitionConfig.greyscale === 1 ? 0 : 1,
+                      transitionConfig.greyscale,
+                      fract
+                    )
                   );
                 }
               }
