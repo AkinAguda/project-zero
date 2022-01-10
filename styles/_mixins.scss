@@ -1,0 +1,18 @@
+@mixin hzn-scrollbar {
+  &::-webkit-scrollbar {
+    padding: 0 5px;
+    width: 8px;
+    height: 8px;
+  }
+  &::-webkit-scrollbar-track {
+    background-color: #0f0f0f;
+    padding: 5px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+  &::-webkit-scrollbar-corner {
+    background-color: #0f0f0f;
+  }
+}

@@ -1,5 +1,6 @@
 @import "./colors";
 @import "./classes";
+@import "./mixins";
 @import url("https://fonts.googleapis.com/css2?family=Poppins&display=swap");
 
 html,
@@ -8,6 +9,7 @@ body {
   margin: 0;
   font-family: "Poppins", sans-serif;
   background-color: black;
+  @include hzn-scrollbar;
 }
 
 a {

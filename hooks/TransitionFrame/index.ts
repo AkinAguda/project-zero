@@ -1,9 +1,10 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useRef, useEffect, useCallback } from "react";
 import {
   loadImage,
   getValueClosestTo,
   splitRectangeIntoHexagons,
   round,
+  shuffleArray,
 } from "@hzn/utils/functions";
 import { createAndSetupTexture, getRectangleVertices } from "@hzn/utils/webgl";
 import { Polygon } from "@hzn/utils/types";
@@ -11,6 +12,7 @@ import { setupImageRenderer } from "./functions";
 import {
   HEXAGON_DIAMETER_COUNT_X,
   HEXAGON_DIAMETER_COUNT_Y,
+  HEXAGON_TRANSITION_RATE,
 } from "./constatns";
 import { TransitionConfig } from "./types";
 
@@ -37,6 +39,7 @@ export const useTransitionFrame = (initialConfig: InitalConfig) => {
   const canvasW = useRef(0);
   const canvasH = useRef(0);
   const glRef = useRef<WebGLRenderingContext | null | undefined>(null);
+  const randomizedIndices = useRef<number[]>([]);
   const animationframe = useRef<number>(0);
   const animationTimeTravelled = useRef<number>(0);
 
@@ -97,6 +100,10 @@ export const useTransitionFrame = (initialConfig: InitalConfig) => {
             angle
           );
 
+          randomizedIndices.current = shuffleArray(
+            new Array(imagePolygons.current.length).fill(0).map((_, i) => i)
+          );
+
           const { setVertices, setGreyscale, setupRenderer } =
             imageRendererObj.current;
 
@@ -154,6 +161,9 @@ export const useTransitionFrame = (initialConfig: InitalConfig) => {
           setGreyscale(transitionConfig.greyscale || 0);
 
           const renderPolyFrame = (i: number, greyscale: number) => {
+            if (i >= canvasPolygons.current.length) {
+              return;
+            }
             setGreyscale(greyscale);
             setVertices(
               canvasPolygons.current[i].vsVertices,
@@ -181,46 +191,55 @@ export const useTransitionFrame = (initialConfig: InitalConfig) => {
 
           const animate = () => {
             const velocity =
-              (canvasPolygons.current.length - 1) / transitionConfig.duration;
-            let travelled = 0;
-            let prev: number;
+              canvasPolygons.current.length /
+              HEXAGON_TRANSITION_RATE /
+              transitionConfig.duration;
+            let distTravelled = 0;
+            let timeTravelled = 0;
+            let prevTime: number;
 
             const render = (time: number) => {
-              if (!prev) prev = time;
-              const dt = time - prev;
-              prev = time;
-              animationTimeTravelled.current += dt;
+              if (!prevTime) prevTime = time;
+              const dt = time - prevTime;
+              prevTime = time;
+              timeTravelled += dt;
+              const distNow =
+                (velocity * dt + distTravelled) * HEXAGON_TRANSITION_RATE;
 
-              // Goal is to cover canvasPolygons.current.length in timeframe
-              const distanceNow = velocity * dt + travelled;
-              const real = Math.floor(distanceNow);
-              const fract = distanceNow - Math.floor(distanceNow);
+              const real = Math.floor(distNow);
+              const fract = distNow - Math.floor(distNow);
+              const travelledReal = Math.floor(distTravelled);
 
-              //////////////////////////
-              const travelledReal = Math.floor(travelled);
               if (travelledReal < real) {
-                for (let i = travelledReal; i < real; i++) {
-                  renderPolyFrame(i, transitionConfig.greyscale || 0);
+                for (
+                  let i = travelledReal;
+                  i < real;
+                  i += HEXAGON_TRANSITION_RATE
+                ) {
+                  for (let j = 0; j < HEXAGON_TRANSITION_RATE; j++) {
+                    // transitionHexagon(i, config.greyscale);
+                    renderPolyFrame(
+                      randomizedIndices.current[i + j],
+                      transitionConfig.greyscale
+                    );
+                  }
+                }
+              } else {
+                for (let j = 0; j < HEXAGON_TRANSITION_RATE; j++) {
+                  // transitionHexagon(i, config.greyscale);
+                  renderPolyFrame(
+                    randomizedIndices.current[real + j],
+                    transitionConfig.greyscale * fract
+                  );
                 }
               }
-              // transitionHexagon(real, config.greyscale || 1 * fract);
-              renderPolyFrame(real, 1 - fract);
 
-              /////////////////////////
-              travelled = distanceNow;
-              //////
-              if (
-                !(
-                  Math.round(animationTimeTravelled.current) >=
-                  transitionConfig.duration
-                )
-              ) {
-                // console.log(travelled, canvasPolygons.current.length);
+              distTravelled = distNow;
+              if (!(Math.round(timeTravelled) >= transitionConfig.duration)) {
                 animationframe.current = window.requestAnimationFrame(render);
               } else {
                 window.cancelAnimationFrame(animationframe.current);
               }
-              //////
             };
             animationframe.current = window.requestAnimationFrame(render);
           };

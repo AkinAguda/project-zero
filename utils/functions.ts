@@ -265,7 +265,7 @@ export const splitRectangeIntoHexagons = (
   return hexagons;
 };
 
-export const shuffleArray = (array: any[]) => {
+export const shuffleArray = (array: any[]): any[] => {
   let currentIndex = array.length,
     randomIndex;
 

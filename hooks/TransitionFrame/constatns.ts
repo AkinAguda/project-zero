@@ -1,2 +1,4 @@
 export const HEXAGON_DIAMETER_COUNT_X = 4;
 export const HEXAGON_DIAMETER_COUNT_Y = 8;
+
+export const HEXAGON_TRANSITION_RATE = 1;
