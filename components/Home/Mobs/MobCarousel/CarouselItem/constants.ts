@@ -1,1 +1,1 @@
-export const NOISE_QUANTITY_CONSTANT = 0.1;
+export const NOISE_QUANTITY_CONSTANT = 0.2;
