@@ -1,5 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
-import { useTransitionFrame, InitalConfig } from "@hzn/hooks/TransitionFrame";
+import { useTransitionFrame } from "@hzn/hooks/TransitionFrame";
+import { FrameState } from "@hzn/hooks/TransitionFrame/types";
+import { NOISE_QUANTITY_CONSTANT } from "./constants";
 import { CarouselItemConainerProps } from "./types";
 import CarouselItem from "./CarouselItem";
 
@@ -10,8 +12,9 @@ const CarouselItemContainer: React.FC<CarouselItemConainerProps> = ({
   const activeRef = useRef(active);
   const [inistalRenderFinished, setInistalRenderFinished] = useState(false);
   const firstMount = useRef(true);
-  const configRef = useRef<InitalConfig>({
-    greyScale: activeRef.current ? 0 : 1,
+  const configRef = useRef<FrameState>({
+    greyscale: activeRef.current ? 0 : 1,
+    noise: activeRef.current ? 0 : NOISE_QUANTITY_CONSTANT,
   });
   const { renderFrame, canvasRef, transition } = useTransitionFrame(
     configRef.current
@@ -28,6 +31,7 @@ const CarouselItemContainer: React.FC<CarouselItemConainerProps> = ({
         transition({
           duration: 300,
           greyscale: active ? 0 : 1,
+          noise: active ? 0 : NOISE_QUANTITY_CONSTANT,
         });
       }
     }

@@ -4,20 +4,14 @@ import { createAndSetupTexture, getRectangleVertices } from "@hzn/utils/webgl";
 import { setupImageRenderer } from "./functions";
 import { TransitionConfig, FrameState, TransitionState } from "./types";
 
-export interface InitalConfig {
-  greyScale: number;
-}
-
 /**
  * This hook is responsible for everything regarding the filter frame.
  * This hook returns the curret state of the filter frame and information regarding it.
  * @param selectedFilter This is the filter you want frame to have
  * @returns
  */
-export const useTransitionFrame = (initialConfig: InitalConfig) => {
-  const [frameState, setFrameState] = useState<FrameState>({
-    greyscale: initialConfig.greyScale,
-  });
+export const useTransitionFrame = (initialConfig: FrameState) => {
+  const [frameState, setFrameState] = useState<FrameState>(initialConfig);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const frameRendered = useRef(false);
   type ImageRendererType = ReturnType<typeof setupImageRenderer>;
@@ -91,7 +85,7 @@ export const useTransitionFrame = (initialConfig: InitalConfig) => {
 
           setDimensions({ width: canvas.width, height: canvas.height });
 
-          render(frameState.greyscale, 0, pointsCount.current);
+          render(frameState.greyscale, frameState.noise, pointsCount.current);
 
           frameRendered.current = true;
 
@@ -100,7 +94,7 @@ export const useTransitionFrame = (initialConfig: InitalConfig) => {
           reject("ERROR OCCURED SOMEWHERE");
         }
       }),
-    [frameState.greyscale]
+    [frameState]
   );
 
   const transition = useCallback(
@@ -120,16 +114,16 @@ export const useTransitionFrame = (initialConfig: InitalConfig) => {
               let dt = time - lastTime;
               timeSpent += dt;
               lastTime = time;
+              const rangeVal = getValInRangeToOne(
+                0,
+                transitionConfig.duration,
+                timeSpent
+              );
               if (Math.round(timeSpent) >= transitionConfig.duration) {
                 cancelAnimationFrame(animationframe.current);
                 render(transitionConfig.greyscale, 0, pointsCount.current);
-                setFrameState({ greyscale: transitionConfig.greyscale });
+                setFrameState({ ...transitionConfig });
               } else {
-                const rangeVal = getValInRangeToOne(
-                  0,
-                  transitionConfig.duration,
-                  timeSpent
-                );
                 animationframe.current = window.requestAnimationFrame(draw);
                 render(
                   getValInRangeToOne(
@@ -137,7 +131,7 @@ export const useTransitionFrame = (initialConfig: InitalConfig) => {
                     transitionConfig.greyscale,
                     rangeVal
                   ),
-                  0,
+                  rangeVal * transitionConfig.noise,
                   pointsCount.current
                 );
               }
@@ -148,7 +142,7 @@ export const useTransitionFrame = (initialConfig: InitalConfig) => {
         }
         resolve("TRANSITIONED");
       }),
-    [frameState.greyscale]
+    [frameState]
   );
 
   return {

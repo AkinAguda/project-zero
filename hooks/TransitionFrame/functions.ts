@@ -5,6 +5,7 @@ import {
   // setRectangle,
   TextureConfig,
 } from "@hzn/utils/webgl";
+import { getValInRangeToOne } from "@hzn/utils/functions";
 
 export const setupImageRenderer = (
   gl: WebGLRenderingContext,
@@ -69,11 +70,8 @@ export const setupImageRenderer = (
     }
 
     vec4 generateNoise(vec4 color) {
-      if (u_noise == 0.0) {
-        return color;
-      }
       vec4 color_copy = color;
-      float noise = random2d() - 0.5 * u_noise;
+      float noise = (random2d() - 0.5) * u_noise;
 
       color_copy.r += noise;
       color_copy.g += noise;
