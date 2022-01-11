@@ -242,7 +242,7 @@ export const useTransitionFrame = (initialConfig: InitalConfig) => {
                       transitionConfig.greyscale,
                       fract
                     ),
-                    1.5
+                    0.5 + fract
                   );
                 }
               }
