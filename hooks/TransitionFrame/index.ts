@@ -105,10 +105,12 @@ export const useTransitionFrame = (initialConfig: InitalConfig) => {
             new Array(imagePolygons.current.length).fill(0).map((_, i) => i)
           );
 
-          const { setVertices, setGreyscale, setupRenderer } =
+          const { setVertices, setGreyscale, setupRenderer, setNoise } =
             imageRendererObj.current;
 
           setGreyscale(initialConfig.greyScale || 0);
+
+          setNoise(0);
 
           const canvasVertices = getRectangleVertices(
             0,
@@ -156,15 +158,20 @@ export const useTransitionFrame = (initialConfig: InitalConfig) => {
         const canvas = canvasRef.current;
         const gl = glRef.current;
         if (canvas && gl) {
-          const { setVertices, setGreyscale, setupRenderer } =
+          const { setVertices, setGreyscale, setupRenderer, setNoise } =
             imageRendererObj.current!;
 
           setGreyscale(transitionConfig.greyscale || 0);
 
-          const renderPolyFrame = (i: number, greyscale: number) => {
+          const renderPolyFrame = (
+            i: number,
+            greyscale: number,
+            noise: number
+          ) => {
             if (i >= canvasPolygons.current.length) {
               return;
             }
+            setNoise(noise);
             setGreyscale(greyscale);
             setVertices(
               canvasPolygons.current[i].vsVertices,
@@ -221,7 +228,8 @@ export const useTransitionFrame = (initialConfig: InitalConfig) => {
                     // transitionHexagon(i, config.greyscale);
                     renderPolyFrame(
                       randomizedIndices.current[i + j],
-                      transitionConfig.greyscale
+                      transitionConfig.greyscale,
+                      0
                     );
                   }
                 }
@@ -233,7 +241,8 @@ export const useTransitionFrame = (initialConfig: InitalConfig) => {
                       transitionConfig.greyscale === 1 ? 0 : 1,
                       transitionConfig.greyscale,
                       fract
-                    )
+                    ),
+                    1.5
                   );
                 }
               }

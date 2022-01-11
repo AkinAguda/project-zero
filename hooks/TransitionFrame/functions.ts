@@ -60,15 +60,36 @@ export const setupImageRenderer = (
     uniform sampler2D u_image;
     uniform vec2 u_textureSize;     
     uniform float u_greyscaleFactor;
+    uniform float u_noise;
 
     varying vec2 v_texCoord;
 
+    float random2d(){
+      return fract(sin(dot(v_texCoord.xy, vec2(12.9898, 78.233))) * 43758.5453);
+    }
+
+    vec4 generateNoise(vec4 color) {
+      if (u_noise == 0.0) {
+        return color;
+      }
+      vec4 color_copy = color;
+      float noise = random2d() - 0.5 * u_noise;
+
+      color_copy.r += noise;
+      color_copy.g += noise;
+      color_copy.b += noise;
+
+      return color_copy;
+    }
+
+    vec4 performGreyscale(vec4 color) {
+      float grey = 0.21 * color.r + 0.71 * color.g + 0.07 * color.b;
+      return vec4(color.rgb * (1.0 - u_greyscaleFactor) + (grey * u_greyscaleFactor), color.a);
+    }
+
     void main() {
-    vec2 onePixel = vec2(1.0, 1.0) / u_textureSize;
-    
-    vec4 rgba = texture2D(u_image, v_texCoord).rgba;
-    float grey = 0.21 * rgba.r + 0.71 * rgba.g + 0.07 * rgba.b;
-    gl_FragColor = vec4(rgba.rgb * (1.0 - u_greyscaleFactor) + (grey * u_greyscaleFactor), rgba.a);
+    vec2 onePixel = vec2(1.0, 1.0) / u_textureSize;    
+    gl_FragColor = generateNoise(performGreyscale(texture2D(u_image, v_texCoord).rgba));
     }
 `;
 
@@ -95,6 +116,8 @@ export const setupImageRenderer = (
     program,
     "u_greyscaleFactor"
   );
+
+  const noiseUniformLocation = gl.getUniformLocation(program, "u_noise");
 
   const textureSize = gl.getUniformLocation(program, "u_textureSize");
   gl.uniform2f(textureSize, image.width, image.height);
@@ -133,9 +156,18 @@ export const setupImageRenderer = (
     gl.uniform1f(greyscaleFactorUniform, value);
   };
 
+  /**
+   * A floating point valu
+   * @param value
+   */
+  const setNoise = (value: number) => {
+    gl.uniform1f(noiseUniformLocation, value);
+  };
+
   return {
     setupRenderer,
     setVertices,
     setGreyscale,
+    setNoise,
   };
 };
