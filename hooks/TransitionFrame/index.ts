@@ -1,9 +1,8 @@
-import { useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { loadImage, getValInRangeToOne } from "@hzn/utils/functions";
 import { createAndSetupTexture, getRectangleVertices } from "@hzn/utils/webgl";
 import { setupImageRenderer } from "./functions";
-import { TransitionConfig } from "./types";
-import { config } from "process";
+import { TransitionConfig, FrameState, TransitionState } from "./types";
 
 export interface InitalConfig {
   greyScale: number;
@@ -16,6 +15,9 @@ export interface InitalConfig {
  * @returns
  */
 export const useTransitionFrame = (initialConfig: InitalConfig) => {
+  const [frameState, setFrameState] = useState<FrameState>({
+    greyscale: initialConfig.greyScale,
+  });
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const frameRendered = useRef(false);
   type ImageRendererType = ReturnType<typeof setupImageRenderer>;
@@ -47,12 +49,12 @@ export const useTransitionFrame = (initialConfig: InitalConfig) => {
     (imageUrl: string) =>
       new Promise(async (resolve, reject) => {
         const [image, error] = await loadImage(imageUrl);
-        imageRef.current = image;
         if (error) {
           reject(error);
         }
         const gl = glRef.current;
         if (image && gl && canvasRef.current) {
+          imageRef.current = image;
           const canvas = canvasRef.current;
           imageRendererObj.current = setupImageRenderer(gl, image, canvas);
 
@@ -89,7 +91,8 @@ export const useTransitionFrame = (initialConfig: InitalConfig) => {
 
           setDimensions({ width: canvas.width, height: canvas.height });
 
-          render(initialConfig.greyScale, 0, pointsCount.current);
+          render(frameState.greyscale, 0, pointsCount.current);
+
           frameRendered.current = true;
 
           resolve("SUCCESS");
@@ -97,7 +100,7 @@ export const useTransitionFrame = (initialConfig: InitalConfig) => {
           reject("ERROR OCCURED SOMEWHERE");
         }
       }),
-    [initialConfig.greyScale]
+    [frameState.greyscale]
   );
 
   const transition = useCallback(
@@ -119,6 +122,8 @@ export const useTransitionFrame = (initialConfig: InitalConfig) => {
               lastTime = time;
               if (Math.round(timeSpent) >= transitionConfig.duration) {
                 cancelAnimationFrame(animationframe.current);
+                render(transitionConfig.greyscale, 0, pointsCount.current);
+                setFrameState({ greyscale: transitionConfig.greyscale });
               } else {
                 const rangeVal = getValInRangeToOne(
                   0,
@@ -126,7 +131,15 @@ export const useTransitionFrame = (initialConfig: InitalConfig) => {
                   timeSpent
                 );
                 animationframe.current = window.requestAnimationFrame(draw);
-                render(rangeVal, 0, pointsCount.current);
+                render(
+                  getValInRangeToOne(
+                    frameState.greyscale,
+                    transitionConfig.greyscale,
+                    rangeVal
+                  ),
+                  0,
+                  pointsCount.current
+                );
               }
             };
             animationframe.current = window.requestAnimationFrame(draw);
@@ -135,13 +148,14 @@ export const useTransitionFrame = (initialConfig: InitalConfig) => {
         }
         resolve("TRANSITIONED");
       }),
-    []
+    [frameState.greyscale]
   );
 
   return {
     renderFrame,
     canvasRef,
     transition,
+    frameState,
   };
 };
 

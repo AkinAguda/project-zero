@@ -26,7 +26,7 @@ const CarouselItemContainer: React.FC<CarouselItemConainerProps> = ({
     if (firstMount.current && inistalRenderFinished) {
       if (activeRef.current !== active) {
         transition({
-          duration: 1000,
+          duration: 300,
           greyscale: active ? 0 : 1,
         });
       }

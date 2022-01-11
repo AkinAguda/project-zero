@@ -33,3 +33,16 @@ export interface DrawWithFilterArgs {
   polyCount: number;
   texture: WebGLTexture | null;
 }
+
+/**
+ * This represents the current state of the hook
+ */
+export interface FrameState {
+  greyscale: number;
+}
+
+export interface TransitionState extends FrameState {
+  duration: number;
+  timeElapsed: number;
+  animationFram: number;
+}

@@ -84,47 +84,6 @@ export type TextureConfig = {
   texture?: WebGLTexture | null;
 };
 
-export const createTexturesWithFrameBuffers = (
-  gl: WebGLRenderingContext,
-  configs: TextureConfig[]
-): [WebGLTexture[], WebGLFramebuffer[], TextureConfig[]] => {
-  const textures: WebGLTexture[] = [];
-  const frameBuffers: WebGLFramebuffer[] = [];
-  configs.forEach((config) => {
-    const texture = createAndSetupTexture(gl, config.texture);
-    if (texture) {
-      textures.push(texture);
-      gl.texImage2D(
-        gl.TEXTURE_2D,
-        0,
-        gl.RGBA,
-        config.width,
-        config.height,
-        0,
-        gl.RGBA,
-        gl.UNSIGNED_BYTE,
-        null
-      );
-
-      const frameBuffer = gl.createFramebuffer();
-      if (frameBuffer) {
-        frameBuffers.push(frameBuffer);
-        gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
-
-        gl.framebufferTexture2D(
-          gl.FRAMEBUFFER,
-          gl.COLOR_ATTACHMENT0,
-          gl.TEXTURE_2D,
-          texture,
-          0
-        );
-      }
-    }
-  });
-
-  return [textures, frameBuffers, configs];
-};
-
 export const setRectangle = (
   gl: WebGLRenderingContext,
   x: number,
