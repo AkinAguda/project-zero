@@ -1,8 +1,9 @@
 import { useRef, useEffect, useCallback } from "react";
-import { loadImage } from "@hzn/utils/functions";
+import { loadImage, getValInRangeToOne } from "@hzn/utils/functions";
 import { createAndSetupTexture, getRectangleVertices } from "@hzn/utils/webgl";
 import { setupImageRenderer } from "./functions";
 import { TransitionConfig } from "./types";
+import { config } from "process";
 
 export interface InitalConfig {
   greyScale: number;
@@ -26,6 +27,7 @@ export const useTransitionFrame = (initialConfig: InitalConfig) => {
   const canvasH = useRef(0);
   const glRef = useRef<WebGLRenderingContext | null | undefined>(null);
   const animationframe = useRef<number>(0);
+  const pointsCount = useRef<number>(0);
 
   useEffect(() => {
     glRef.current = canvasRef.current?.getContext("webgl", {
@@ -70,6 +72,8 @@ export const useTransitionFrame = (initialConfig: InitalConfig) => {
             image.height
           );
 
+          pointsCount.current = canvasVertices.length / 2;
+
           setVertices(canvasVertices, imageVertices);
 
           createAndSetupTexture(gl);
@@ -85,7 +89,7 @@ export const useTransitionFrame = (initialConfig: InitalConfig) => {
 
           setDimensions({ width: canvas.width, height: canvas.height });
 
-          render(1, 1.5, canvasVertices.length / 2);
+          render(initialConfig.greyScale, 0, pointsCount.current);
           frameRendered.current = true;
 
           resolve("SUCCESS");
@@ -93,7 +97,7 @@ export const useTransitionFrame = (initialConfig: InitalConfig) => {
           reject("ERROR OCCURED SOMEWHERE");
         }
       }),
-    []
+    [initialConfig.greyScale]
   );
 
   const transition = useCallback(
@@ -102,8 +106,32 @@ export const useTransitionFrame = (initialConfig: InitalConfig) => {
         const canvas = canvasRef.current;
         const gl = glRef.current;
         if (canvas && gl) {
-          const { setVertices, setGreyscale, setNoise } =
-            imageRendererObj.current!;
+          const { render } = imageRendererObj.current!;
+          const animate = () => {
+            let lastTime: number;
+            let timeSpent = 0;
+            const draw = (time: number) => {
+              if (!lastTime) {
+                lastTime = time;
+              }
+              let dt = time - lastTime;
+              timeSpent += dt;
+              lastTime = time;
+              if (Math.round(timeSpent) >= transitionConfig.duration) {
+                cancelAnimationFrame(animationframe.current);
+              } else {
+                const rangeVal = getValInRangeToOne(
+                  0,
+                  transitionConfig.duration,
+                  timeSpent
+                );
+                animationframe.current = window.requestAnimationFrame(draw);
+                render(rangeVal, 0, pointsCount.current);
+              }
+            };
+            animationframe.current = window.requestAnimationFrame(draw);
+          };
+          animate();
         }
         resolve("TRANSITIONED");
       }),
