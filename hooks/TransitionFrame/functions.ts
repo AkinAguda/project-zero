@@ -139,13 +139,16 @@ export const setupImageRenderer = (
     gl.vertexAttribPointer(textureLocation, 2, gl.FLOAT, false, 0, 0);
   };
 
-  const setupRenderer = (config: TextureConfig) => {
+  const setDimensions = (config: TextureConfig) => {
     const { width, height } = config;
-
     gl.uniform2f(canvasResolutionUniformLocation, width, height);
-
-    // Tell webgl the viewport setting needed for framebuffer.
     gl.viewport(0, 0, width, height);
+  };
+
+  const render = (gScale: number, noise: number, count: number) => {
+    setGreyscale(gScale);
+    setNoise(noise);
+    gl.drawArrays(gl.TRIANGLES, 0, count);
   };
 
   /**
@@ -165,7 +168,8 @@ export const setupImageRenderer = (
   };
 
   return {
-    setupRenderer,
+    setDimensions,
+    render,
     setVertices,
     setGreyscale,
     setNoise,
