@@ -21,11 +21,7 @@ export interface TransitionConfig {
    * This is the duration of the transition in milliseconds
    */
   duration: number;
-  /**
-   * This is the final greyscale intensity
-   */
-  greyscale: number;
-  noise: number;
+  nextState: FrameState;
 }
 
 export interface DrawWithFilterArgs {
@@ -41,10 +37,4 @@ export interface DrawWithFilterArgs {
 export interface FrameState {
   greyscale: number;
   noise: number;
-}
-
-export interface TransitionState extends FrameState {
-  duration: number;
-  timeElapsed: number;
-  animationFram: number;
 }

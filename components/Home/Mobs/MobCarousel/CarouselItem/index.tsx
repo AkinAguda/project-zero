@@ -29,9 +29,11 @@ const CarouselItemContainer: React.FC<CarouselItemConainerProps> = ({
     if (firstMount.current && inistalRenderFinished) {
       if (activeRef.current !== active) {
         transition({
-          duration: 1000,
-          greyscale: active ? 0 : 1,
-          noise: active ? 0 : NOISE_QUANTITY_CONSTANT,
+          duration: 800,
+          nextState: {
+            greyscale: active ? 0 : 1,
+            noise: active ? 0 : NOISE_QUANTITY_CONSTANT,
+          },
         });
       }
     }

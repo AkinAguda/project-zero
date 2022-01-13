@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { loadImage, getValInRangeToOne } from "@hzn/utils/functions";
 import { createAndSetupTexture, getRectangleVertices } from "@hzn/utils/webgl";
 import { setupImageRenderer } from "./functions";
-import { TransitionConfig, FrameState, TransitionState } from "./types";
+import { TransitionConfig, FrameState } from "./types";
 
 /**
  * This hook is responsible for everything regarding the filter frame.
@@ -11,7 +11,10 @@ import { TransitionConfig, FrameState, TransitionState } from "./types";
  * @returns
  */
 export const useTransitionFrame = (initialConfig: FrameState) => {
-  const [frameState, setFrameState] = useState<FrameState>(initialConfig);
+  // const [frameState, setFrameState] = useState<FrameState>(initialConfig);
+  const currentFrameState = useRef<FrameState>(initialConfig);
+  const nextFrameState = useRef<FrameState>(initialConfig);
+  const animationFrameState = useRef<FrameState>(initialConfig);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const frameRendered = useRef(false);
   type ImageRendererType = ReturnType<typeof setupImageRenderer>;
@@ -85,7 +88,11 @@ export const useTransitionFrame = (initialConfig: FrameState) => {
 
           setDimensions({ width: canvas.width, height: canvas.height });
 
-          render(frameState.greyscale, frameState.noise, pointsCount.current);
+          render(
+            currentFrameState.current.greyscale,
+            currentFrameState.current.noise,
+            pointsCount.current
+          );
 
           frameRendered.current = true;
 
@@ -94,7 +101,7 @@ export const useTransitionFrame = (initialConfig: FrameState) => {
           reject("ERROR OCCURED SOMEWHERE");
         }
       }),
-    [frameState]
+    []
   );
 
   const transition = useCallback(
@@ -103,10 +110,15 @@ export const useTransitionFrame = (initialConfig: FrameState) => {
         const canvas = canvasRef.current;
         const gl = glRef.current;
         if (canvas && gl) {
+          nextFrameState.current = { ...transitionConfig.nextState };
           const { render } = imageRendererObj.current!;
           const animate = () => {
             let lastTime: number;
             let timeSpent = 0;
+            if (animationframe.current) {
+              cancelAnimationFrame(animationframe.current);
+              currentFrameState.current = { ...animationFrameState.current };
+            }
             const draw = (time: number) => {
               if (!lastTime) {
                 lastTime = time;
@@ -121,19 +133,22 @@ export const useTransitionFrame = (initialConfig: FrameState) => {
               );
               if (Math.round(timeSpent) >= transitionConfig.duration) {
                 cancelAnimationFrame(animationframe.current);
-                render(transitionConfig.greyscale, 0, pointsCount.current);
-                setFrameState({ ...transitionConfig });
-              } else {
-                animationframe.current = window.requestAnimationFrame(draw);
+                animationframe.current = 0;
                 render(
-                  getValInRangeToOne(
-                    frameState.greyscale,
-                    transitionConfig.greyscale,
-                    rangeVal
-                  ),
-                  rangeVal * transitionConfig.noise,
+                  nextFrameState.current.greyscale,
+                  nextFrameState.current.noise,
                   pointsCount.current
                 );
+                currentFrameState.current = { ...nextFrameState.current };
+              } else {
+                animationframe.current = window.requestAnimationFrame(draw);
+                const greyscale = rangeVal * nextFrameState.current.greyscale;
+                const noise = rangeVal * nextFrameState.current.noise;
+                render(greyscale, noise, pointsCount.current);
+                animationFrameState.current = {
+                  greyscale,
+                  noise,
+                };
               }
             };
             animationframe.current = window.requestAnimationFrame(draw);
@@ -142,14 +157,13 @@ export const useTransitionFrame = (initialConfig: FrameState) => {
         }
         resolve("TRANSITIONED");
       }),
-    [frameState]
+    []
   );
 
   return {
     renderFrame,
     canvasRef,
     transition,
-    frameState,
   };
 };
 
