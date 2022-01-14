@@ -1,5 +1,9 @@
-import { useState, useRef, useEffect, useCallback } from "react";
-import { loadImage, getValInRangeToOne } from "@hzn/utils/functions";
+import { useRef, useEffect, useCallback } from "react";
+import {
+  loadImage,
+  getValInRangeToOne,
+  getValFromRangeToOne,
+} from "@hzn/utils/functions";
 import { createAndSetupTexture, getRectangleVertices } from "@hzn/utils/webgl";
 import { setupImageRenderer } from "./functions";
 import { TransitionConfig, FrameState } from "./types";
@@ -142,7 +146,38 @@ export const useTransitionFrame = (initialConfig: FrameState) => {
                 currentFrameState.current = { ...nextFrameState.current };
               } else {
                 animationframe.current = window.requestAnimationFrame(draw);
-                const greyscale = rangeVal * nextFrameState.current.greyscale;
+                let g = 0;
+                if (
+                  currentFrameState.current.greyscale >
+                  nextFrameState.current.greyscale
+                ) {
+                  g = getValFromRangeToOne(
+                    nextFrameState.current.greyscale,
+                    currentFrameState.current.greyscale,
+
+                    rangeVal
+                  );
+                } else {
+                  g = getValFromRangeToOne(
+                    currentFrameState.current.greyscale,
+                    nextFrameState.current.greyscale,
+                    rangeVal
+                  );
+                }
+                let greyscale = getValInRangeToOne(
+                  currentFrameState.current.greyscale,
+                  nextFrameState.current.greyscale,
+                  g
+                );
+                if (greyscale < 0) {
+                  greyscale = getValInRangeToOne(
+                    nextFrameState.current.greyscale,
+                    currentFrameState.current.greyscale,
+                    g
+                  );
+                }
+                if (greyscale < 0) {
+                }
                 const noise = rangeVal * nextFrameState.current.noise;
                 render(greyscale, noise, pointsCount.current);
                 animationFrameState.current = {
