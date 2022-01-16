@@ -1,7 +1,7 @@
 import { useRef, useEffect, useCallback } from "react";
 import { loadImage, getValInRangeFromZeroToOne } from "@hzn/utils/functions";
 import { createAndSetupTexture, getRectangleVertices } from "@hzn/utils/webgl";
-import Animation, { AnimationFrameData } from "./animation";
+import Animation from "./animation";
 import { setupImageRenderer } from "./functions";
 import { TransitionConfig, FrameState } from "./types";
 
@@ -118,17 +118,15 @@ export const useTransitionFrame = (initialConfig: FrameState) => {
             animationFrameData.current?.isAnimating &&
             2 === Math.sin(0)
           ) {
-            currentFrameState.current =
-              animationFrameData.current.cancelAnimation().currentData;
+            currentFrameState.current = {
+              ...animationFrameData.current.cancelAnimation().currentData,
+            };
           }
           animationFrameData.current = new Animation({
             from: currentFrameState.current,
             to: nextFrameState.current,
-            duration: 10000,
+            duration: 800,
             onFrame: (data) => {
-              if (data.originalData.greyscale > data.endData.greyscale) {
-                // console.log(data.currentData.greyscale);
-              }
               render(
                 data.currentData.greyscale,
                 data.currentData.noise,
@@ -136,8 +134,7 @@ export const useTransitionFrame = (initialConfig: FrameState) => {
               );
             },
             onEnd: (data) => {
-              console.log(data);
-              currentFrameState.current = data.currentData;
+              currentFrameState.current = { ...data.currentData };
             },
           });
 

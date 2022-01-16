@@ -40,13 +40,13 @@ export default class Animation<T extends Record<keyof T, number>> {
   public isAnimating: boolean = false;
 
   constructor(props: AnimationProps<T>) {
-    this.from = props.from;
-    this.to = props.to;
+    this.from = { ...props.from };
+    this.to = { ...props.to };
     this.duration = props.duration;
     this.onFrame = props.onFrame;
     this.onEnd = props.onEnd;
 
-    this.now = props.from;
+    this.now = { ...props.from };
     this.dataKeys = Object.keys(props.from) as (keyof T)[];
   }
 
@@ -84,7 +84,6 @@ export default class Animation<T extends Record<keyof T, number>> {
       );
 
       this.dataKeys.forEach((key) => {
-        //   console.log(this.from);
         this.now[key] = getValueInRangeFromRangeInOne(
           this.from[key],
           this.to[key],
