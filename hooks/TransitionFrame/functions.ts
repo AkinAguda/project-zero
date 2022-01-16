@@ -5,7 +5,6 @@ import {
   // setRectangle,
   TextureConfig,
 } from "@hzn/utils/webgl";
-import { getValInRangeToOne } from "@hzn/utils/functions";
 
 export const setupImageRenderer = (
   gl: WebGLRenderingContext,

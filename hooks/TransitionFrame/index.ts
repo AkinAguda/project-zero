@@ -1,10 +1,7 @@
 import { useRef, useEffect, useCallback } from "react";
-import {
-  loadImage,
-  getValInRangeToOne,
-  getValFromRangeToOne,
-} from "@hzn/utils/functions";
+import { loadImage, getValInRangeFromZeroToOne } from "@hzn/utils/functions";
 import { createAndSetupTexture, getRectangleVertices } from "@hzn/utils/webgl";
+import Animation, { AnimationFrameData } from "./animation";
 import { setupImageRenderer } from "./functions";
 import { TransitionConfig, FrameState } from "./types";
 
@@ -29,7 +26,7 @@ export const useTransitionFrame = (initialConfig: FrameState) => {
   const canvasW = useRef(0);
   const canvasH = useRef(0);
   const glRef = useRef<WebGLRenderingContext | null | undefined>(null);
-  const animationframe = useRef<number>(0);
+  const animationFrameData = useRef<Animation<FrameState> | null>(null);
   const pointsCount = useRef<number>(0);
 
   useEffect(() => {
@@ -116,79 +113,41 @@ export const useTransitionFrame = (initialConfig: FrameState) => {
         if (canvas && gl) {
           nextFrameState.current = { ...transitionConfig.nextState };
           const { render } = imageRendererObj.current!;
-          const animate = () => {
-            let lastTime: number;
-            let timeSpent = 0;
-            if (animationframe.current) {
-              cancelAnimationFrame(animationframe.current);
-              currentFrameState.current = { ...animationFrameState.current };
-            }
-            const draw = (time: number) => {
-              if (!lastTime) {
-                lastTime = time;
-              }
-              let dt = time - lastTime;
-              timeSpent += dt;
-              lastTime = time;
-              const rangeVal = getValInRangeToOne(
-                0,
-                transitionConfig.duration,
-                timeSpent
-              );
-              if (Math.round(timeSpent) >= transitionConfig.duration) {
-                cancelAnimationFrame(animationframe.current);
-                animationframe.current = 0;
+
+          if (animationFrameData && animationFrameData.current?.isAnimating) {
+            const { currentData } =
+              animationFrameData.current.cancelAnimation();
+            animationFrameData.current = new Animation({
+              from: currentData,
+              to: nextFrameState.current,
+              duration: 10000,
+              onFrame: (data) => {
                 render(
-                  nextFrameState.current.greyscale,
-                  nextFrameState.current.noise,
+                  data.currentData.greyscale,
+                  data.currentData.noise,
                   pointsCount.current
                 );
-                currentFrameState.current = { ...nextFrameState.current };
-              } else {
-                animationframe.current = window.requestAnimationFrame(draw);
-                let g = 0;
-                if (
-                  currentFrameState.current.greyscale >
-                  nextFrameState.current.greyscale
-                ) {
-                  g = getValFromRangeToOne(
-                    nextFrameState.current.greyscale,
-                    currentFrameState.current.greyscale,
-
-                    rangeVal
-                  );
-                } else {
-                  g = getValFromRangeToOne(
-                    currentFrameState.current.greyscale,
-                    nextFrameState.current.greyscale,
-                    rangeVal
-                  );
+              },
+            });
+          } else {
+            animationFrameData.current = new Animation({
+              from: currentFrameState.current,
+              to: nextFrameState.current,
+              duration: 10000,
+              onFrame: (data) => {
+                if (data.originalData.greyscale > data.endData.greyscale) {
+                  console.log(data.currentData.greyscale);
                 }
-                let greyscale = getValInRangeToOne(
-                  currentFrameState.current.greyscale,
-                  nextFrameState.current.greyscale,
-                  g
+                render(
+                  data.currentData.greyscale,
+                  data.currentData.noise,
+                  pointsCount.current
                 );
-                if (greyscale < 0) {
-                  greyscale = getValInRangeToOne(
-                    nextFrameState.current.greyscale,
-                    currentFrameState.current.greyscale,
-                    g
-                  );
-                }
-                if (greyscale < 0) {
-                }
-                const noise = rangeVal * nextFrameState.current.noise;
-                render(greyscale, noise, pointsCount.current);
-                animationFrameState.current = {
-                  greyscale,
-                  noise,
-                };
-              }
-            };
-            animationframe.current = window.requestAnimationFrame(draw);
-          };
-          animate();
+              },
+            });
+          }
+
+          animationFrameData.current.animate();
         }
         resolve("TRANSITIONED");
       }),

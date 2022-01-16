@@ -72,20 +72,14 @@ export const shuffleArray = (array: any[]): any[] => {
   return array;
 };
 
-export const getValInRangeToOne = (start: number, end: number, value: number) =>
-  (value - start) / (end - start);
-
-export const getValFromRangeToOne = (
+export const getValInRangeFromZeroToOne = (
   start: number,
   end: number,
   value: number
-) => {
-  const diff = start - end;
-  if (diff < 0) {
-    return -1 * (diff + (end - (Math.abs(diff) * value + start)));
-  } else {
-    return start - (Math.abs(diff) * value + end);
-  }
-};
+) => (value - start) / (end - start);
 
-console.log(getValFromRangeToOne(1, 0, 0.3));
+export const getValueInRangeFromRangeInOne = (
+  start: number,
+  end: number,
+  value: number
+) => value * (end - start) + start;
