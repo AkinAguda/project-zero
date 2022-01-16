@@ -15,7 +15,6 @@ export const useTransitionFrame = (initialConfig: FrameState) => {
   // const [frameState, setFrameState] = useState<FrameState>(initialConfig);
   const currentFrameState = useRef<FrameState>(initialConfig);
   const nextFrameState = useRef<FrameState>(initialConfig);
-  const animationFrameState = useRef<FrameState>(initialConfig);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const frameRendered = useRef(false);
   type ImageRendererType = ReturnType<typeof setupImageRenderer>;
@@ -107,45 +106,40 @@ export const useTransitionFrame = (initialConfig: FrameState) => {
 
   const transition = useCallback(
     (transitionConfig: TransitionConfig) =>
-      new Promise((resolve, reject) => {
+      new Promise((resolve, _) => {
         const canvas = canvasRef.current;
         const gl = glRef.current;
         if (canvas && gl) {
           nextFrameState.current = { ...transitionConfig.nextState };
           const { render } = imageRendererObj.current!;
 
-          if (animationFrameData && animationFrameData.current?.isAnimating) {
-            const { currentData } =
-              animationFrameData.current.cancelAnimation();
-            animationFrameData.current = new Animation({
-              from: currentData,
-              to: nextFrameState.current,
-              duration: 10000,
-              onFrame: (data) => {
-                render(
-                  data.currentData.greyscale,
-                  data.currentData.noise,
-                  pointsCount.current
-                );
-              },
-            });
-          } else {
-            animationFrameData.current = new Animation({
-              from: currentFrameState.current,
-              to: nextFrameState.current,
-              duration: 10000,
-              onFrame: (data) => {
-                if (data.originalData.greyscale > data.endData.greyscale) {
-                  console.log(data.currentData.greyscale);
-                }
-                render(
-                  data.currentData.greyscale,
-                  data.currentData.noise,
-                  pointsCount.current
-                );
-              },
-            });
+          if (
+            animationFrameData &&
+            animationFrameData.current?.isAnimating &&
+            2 === Math.sin(0)
+          ) {
+            currentFrameState.current =
+              animationFrameData.current.cancelAnimation().currentData;
           }
+          animationFrameData.current = new Animation({
+            from: currentFrameState.current,
+            to: nextFrameState.current,
+            duration: 10000,
+            onFrame: (data) => {
+              if (data.originalData.greyscale > data.endData.greyscale) {
+                // console.log(data.currentData.greyscale);
+              }
+              render(
+                data.currentData.greyscale,
+                data.currentData.noise,
+                pointsCount.current
+              );
+            },
+            onEnd: (data) => {
+              console.log(data);
+              currentFrameState.current = data.currentData;
+            },
+          });
 
           animationFrameData.current.animate();
         }

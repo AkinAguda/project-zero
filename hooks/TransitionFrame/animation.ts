@@ -20,6 +20,7 @@ export interface AnimationProps<T> {
   to: T;
   duration: number;
   onFrame: OnFrame<T>;
+  onEnd: OnFrame<T>;
 }
 
 export type OnFrame<T> = (data: AnimationFrameData<T>) => void;
@@ -29,6 +30,7 @@ export default class Animation<T extends Record<keyof T, number>> {
   private to: T;
   private duration: number;
   private onFrame: OnFrame<T>;
+  private onEnd: OnFrame<T>;
 
   private timeSpent: number = 0;
   private lastTime: number = 0;
@@ -42,12 +44,14 @@ export default class Animation<T extends Record<keyof T, number>> {
     this.to = props.to;
     this.duration = props.duration;
     this.onFrame = props.onFrame;
+    this.onEnd = props.onEnd;
+
     this.now = props.from;
     this.dataKeys = Object.keys(props.from) as (keyof T)[];
   }
 
   cancelAnimation = (): AnimationFrameData<T> => {
-    cancelAnimationFrame(this.animationFrame);
+    window.cancelAnimationFrame(this.animationFrame);
     this.isAnimating = false;
     return this.getAnimationFrameData();
   };
@@ -62,17 +66,15 @@ export default class Animation<T extends Record<keyof T, number>> {
     };
   };
 
-  private drawFrame = (time: number): AnimationFrameData<T> | void => {
+  private drawFrame = (time: number) => {
     if (!this.lastTime) {
       this.lastTime = time;
     }
     let dt = time - this.lastTime;
     this.timeSpent += dt;
     this.lastTime = time;
-
-    // console.log(this.timeSpent);
     if (Math.round(this.timeSpent) >= this.duration) {
-      return this.cancelAnimation();
+      this.onEnd(this.cancelAnimation());
     }
 
     const timeRangeValue = getValInRangeFromZeroToOne(
@@ -82,6 +84,7 @@ export default class Animation<T extends Record<keyof T, number>> {
     );
 
     this.dataKeys.forEach((key) => {
+      //   console.log(this.from);
       this.now[key] = getValueInRangeFromRangeInOne(
         this.from[key],
         this.to[key],
