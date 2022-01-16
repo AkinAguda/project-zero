@@ -52,6 +52,7 @@ export default class Animation<T extends Record<keyof T, number>> {
 
   cancelAnimation = (): AnimationFrameData<T> => {
     window.cancelAnimationFrame(this.animationFrame);
+    this.animationFrame = 0;
     this.isAnimating = false;
     return this.getAnimationFrameData();
   };
@@ -75,29 +76,29 @@ export default class Animation<T extends Record<keyof T, number>> {
     this.lastTime = time;
     if (Math.round(this.timeSpent) >= this.duration) {
       this.onEnd(this.cancelAnimation());
+    } else {
+      const timeRangeValue = getValInRangeFromZeroToOne(
+        0,
+        this.duration,
+        this.timeSpent
+      );
+
+      this.dataKeys.forEach((key) => {
+        //   console.log(this.from);
+        this.now[key] = getValueInRangeFromRangeInOne(
+          this.from[key],
+          this.to[key],
+          timeRangeValue
+        ) as T[keyof T];
+      });
+
+      this.onFrame(this.getAnimationFrameData());
+      this.animationFrame = window.requestAnimationFrame(this.drawFrame);
     }
-
-    const timeRangeValue = getValInRangeFromZeroToOne(
-      0,
-      this.duration,
-      this.timeSpent
-    );
-
-    this.dataKeys.forEach((key) => {
-      //   console.log(this.from);
-      this.now[key] = getValueInRangeFromRangeInOne(
-        this.from[key],
-        this.to[key],
-        timeRangeValue
-      ) as T[keyof T];
-    });
-
-    this.onFrame(this.getAnimationFrameData());
-    this.animationFrame = requestAnimationFrame(this.drawFrame);
   };
 
   animate = () => {
     this.isAnimating = true;
-    this.animationFrame = requestAnimationFrame(this.drawFrame);
+    this.animationFrame = window.requestAnimationFrame(this.drawFrame);
   };
 }
