@@ -113,11 +113,7 @@ export const useTransitionFrame = (initialConfig: FrameState) => {
           nextFrameState.current = { ...transitionConfig.nextState };
           const { render } = imageRendererObj.current!;
 
-          if (
-            animationFrameData &&
-            animationFrameData.current?.isAnimating &&
-            2 === Math.sin(0)
-          ) {
+          if (animationFrameData && animationFrameData.current?.isAnimating) {
             currentFrameState.current = {
               ...animationFrameData.current.cancelAnimation().currentData,
             };
