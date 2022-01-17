@@ -9,6 +9,7 @@ const ModDescriptionContainer: React.FC<MobDescriptionContainerProps> = ({
   const paragraphRef = useRef<HTMLParagraphElement>(null);
 
   useEffect(() => {
+    const paragraph = paragraphRef.current;
     timer.current = setTimeout(() => {
       paragraphRef.current?.classList.add("pop-appear-1-300");
     });
@@ -17,7 +18,7 @@ const ModDescriptionContainer: React.FC<MobDescriptionContainerProps> = ({
         clearTimeout(timer.current);
       }
       timer.current = null;
-      paragraphRef.current?.classList.remove("pop-appear-1-300");
+      if (paragraph) paragraph.classList.remove("pop-appear-1-300");
     };
   }, [description]);
 
