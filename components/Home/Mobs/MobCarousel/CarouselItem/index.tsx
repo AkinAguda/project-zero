@@ -43,7 +43,9 @@ const CarouselItemContainer: React.FC<CarouselItemConainerProps> = ({
     activeRef.current = active;
   }, [active, inistalRenderFinished, transition]);
 
-  return <CarouselItem canvasRef={canvasRef} active={active} />;
+  return (
+    <CarouselItem canvasRef={canvasRef} active={active} mobName={mob.name} />
+  );
 };
 
 export default CarouselItemContainer;

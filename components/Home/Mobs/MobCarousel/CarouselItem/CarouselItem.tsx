@@ -6,9 +6,13 @@ import classes from "./CarouselItem.module.scss";
 const CarouselItem: React.FC<CarouselItemViewProps> = ({
   canvasRef,
   active,
+  mobName,
 }) => (
   <div className={mergeClasses(classes.container, [active, classes.active])}>
     <canvas ref={canvasRef}></canvas>
+    <div className={mergeClasses(classes.mobName, [active, classes.visible])}>
+      {mobName}
+    </div>
   </div>
 );
 

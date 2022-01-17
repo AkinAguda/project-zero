@@ -6,6 +6,7 @@ interface CarouselItemCommonProps {
 
 export interface CarouselItemViewProps extends CarouselItemCommonProps {
   canvasRef: React.RefObject<HTMLCanvasElement>;
+  mobName: string;
 }
 
 export interface CarouselItemConainerProps extends CarouselItemCommonProps {
