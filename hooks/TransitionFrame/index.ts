@@ -121,7 +121,7 @@ export const useTransitionFrame = (initialConfig: FrameState) => {
           animationFrameData.current = new Animation({
             from: currentFrameState.current,
             to: nextFrameState.current,
-            duration: 800,
+            duration: transitionConfig.duration,
             onFrame: (data) => {
               render(
                 data.currentData.greyscale,
