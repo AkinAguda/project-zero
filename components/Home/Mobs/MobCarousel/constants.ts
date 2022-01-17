@@ -1,8 +1,4 @@
-export interface MobData {
-  pictureUrl: string;
-  name: string;
-  description: string;
-}
+import { MobData } from "./types";
 
 export const CAROUSEL_ITEM_WIDTH = 275;
 

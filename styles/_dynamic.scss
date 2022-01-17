@@ -1,0 +1,16 @@
+@mixin pop-appear-defaults {
+  opacity: 0;
+  transform: scale(0.8);
+}
+
+@keyframes pop-appear-1 {
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.pop-appear-1-300 {
+  @include pop-appear-defaults;
+  animation: pop-appear-1 0.3s forwards;
+}

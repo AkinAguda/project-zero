@@ -1,4 +1,4 @@
-import { MobData } from "./../constants";
+import { MobData } from "./../types";
 
 interface CarouselItemCommonProps {
   active: boolean;

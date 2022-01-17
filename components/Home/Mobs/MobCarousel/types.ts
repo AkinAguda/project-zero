@@ -1,4 +1,8 @@
-import { MobData } from "./constants";
+export interface MobData {
+  pictureUrl: string;
+  name: string;
+  description: string;
+}
 
 export interface MobCarouselViewProps {
   mobs: MobData[];

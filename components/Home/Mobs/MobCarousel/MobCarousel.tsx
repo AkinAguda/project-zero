@@ -2,8 +2,9 @@ import React from "react";
 import { Carousel } from "react-responsive-carousel";
 import "react-responsive-carousel/lib/styles/carousel.min.css";
 import { mergeClasses } from "@hzn/utils/functions";
+import ModDescription from "./MobDescription";
 import CarouselItem from "./CarouselItem";
-import { getSizeClasses, truncate } from "./functions";
+import { getSizeClasses } from "./functions";
 import { MobCarouselViewProps } from "./types";
 import classes from "./MobCarousel.module.scss";
 
@@ -15,9 +16,7 @@ const MobCarousel: React.FC<MobCarouselViewProps> = ({
   ready,
 }) => (
   <div>
-    <p className={mergeClasses("p-1", classes.description)}>
-      {mobs[activeIndex].description}
-    </p>
+    <ModDescription description={mobs[activeIndex].description} />
     {ready ? (
       <Carousel
         selectedItem={activeIndex}

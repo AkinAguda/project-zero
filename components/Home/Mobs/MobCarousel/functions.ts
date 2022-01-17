@@ -1,4 +1,4 @@
-import { MobData, CAROUSEL_ITEM_WIDTH } from "./constants";
+import { CAROUSEL_ITEM_WIDTH } from "./constants";
 
 export const getMiddleIndex = (length: number) => Math.floor(length / 2);
 
