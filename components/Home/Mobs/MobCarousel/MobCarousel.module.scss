@@ -1,5 +1,5 @@
 .itemWrapper {
-  padding: 100px 30px 150px 30px;
+  padding: 100px 0px 150px 0px;
   transition: transform 0.3s;
   li {
     align-self: baseline;
@@ -16,4 +16,14 @@
 
 .sizeThree {
   transform: scaleY(90%) translateY(3.8%);
+}
+
+.description {
+  margin-top: 0;
+  min-height: 72px;
+  max-height: 72px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 443px;
+  max-width: 80vw;
 }
