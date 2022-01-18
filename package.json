@@ -5,7 +5,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "cypress": "cypress open",
+    "test": "jest --watch"
   },
   "dependencies": {
     "@hzn/common": "./components/common",
@@ -20,10 +22,14 @@
   },
   "devDependencies": {
     "@svgr/webpack": "^5.5.0",
+    "@testing-library/jest-dom": "^5.16.1",
+    "@testing-library/react": "^12.1.2",
     "@types/node": "16.11.7",
     "@types/react": "17.0.35",
+    "cypress": "^9.2.1",
     "eslint": "7.32.0",
     "eslint-config-next": "12.0.4",
+    "jest": "^27.4.7",
     "typescript": "4.4.4"
   }
 }
