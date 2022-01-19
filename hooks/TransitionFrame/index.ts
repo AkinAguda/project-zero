@@ -1,7 +1,7 @@
 import { useRef, useEffect, useCallback } from "react";
-import { loadImage, getValInRangeFromZeroToOne } from "@hzn/utils/functions";
+import { loadImage } from "@hzn/utils/functions";
 import { createAndSetupTexture, getRectangleVertices } from "@hzn/utils/webgl";
-import Animation from "./animation";
+import Animation from "@hzn/utils/animation";
 import { setupImageRenderer } from "./functions";
 import { TransitionConfig, FrameState } from "./types";
 
