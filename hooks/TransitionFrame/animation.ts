@@ -1,6 +1,6 @@
 import {
   getValInRangeFromZeroToOne,
-  getValueInRangeFromRangeInOne,
+  getValueInRangeFromRangeInZeroToOne,
 } from "@hzn/utils/functions";
 
 export interface AnimationData {
@@ -84,7 +84,7 @@ export default class Animation<T extends Record<keyof T, number>> {
       );
 
       this.dataKeys.forEach((key) => {
-        this.now[key] = getValueInRangeFromRangeInOne(
+        this.now[key] = getValueInRangeFromRangeInZeroToOne(
           this.from[key],
           this.to[key],
           timeRangeValue
