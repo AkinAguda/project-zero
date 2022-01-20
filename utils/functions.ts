@@ -124,5 +124,3 @@ export const getValueInRangeFromRangeInZeroToOne = (
 
   return value * (end - start) + start;
 };
-
-console.log(getValInRangeFromZeroToOne(30, 900, 242));
