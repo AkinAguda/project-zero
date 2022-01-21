@@ -1,4 +1,5 @@
 import React from "react";
+import WebglCondition from "@hzn/common/WebglCondition";
 import LogoSvg from "@hzn/svgs/logo.svg";
 import MobCarousel from "./MobCarousel";
 import classes from "./Mobs.module.scss";
@@ -12,7 +13,9 @@ const Mobs: React.FC = () => (
         Beasts of metal, wrath, and destruction
       </h3>
     </div>
-    <MobCarousel />
+    <WebglCondition usesWebgl>
+      <MobCarousel />
+    </WebglCondition>
   </div>
 );
 
