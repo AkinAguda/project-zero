@@ -1,0 +1,38 @@
+.container {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  height: 675px;
+  width: 376px;
+  border: 3.2px solid transparent;
+  box-sizing: border-box;
+  transition: box-shadow 0.5s, border 0.5s;
+  cursor: pointer;
+  canvas {
+    height: 100%;
+    width: 100%;
+  }
+  &.active {
+    // background: linear-gradient(0deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2));
+    border: 3.2px solid #3542ff;
+    box-shadow: 0px 44px 120px rgba(53, 66, 255, 0.5);
+    z-index: 1;
+  }
+  .mobName {
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+    color: var(--light-1);
+    font-weight: 600;
+    font-size: 20px;
+    transition: 0.3s;
+    letter-spacing: 0.1px;
+    transform: scale(0.2) translateY(20px);
+    opacity: 0;
+  }
+  .visible {
+    opacity: 1;
+    letter-spacing: 1.5px;
+    transform: scale(1) translateY(0px);
+  }
+}

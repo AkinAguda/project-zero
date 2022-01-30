@@ -1,6 +1,7 @@
 import Head from "next/head";
 import type { NextPage } from "next";
-import Mobs from "./Mobs/Mobs";
+import Mobs from "./Mobs";
+import Characters from "./Characters";
 import classes from "./Home.module.css";
 
 const Home: NextPage = () => (
@@ -12,6 +13,7 @@ const Home: NextPage = () => (
     </Head>
     <main>
       <Mobs />
+      <Characters />
     </main>
   </div>
 );

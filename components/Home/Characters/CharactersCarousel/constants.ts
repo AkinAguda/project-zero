@@ -2,7 +2,7 @@ import { CharacterData } from "./types";
 
 export const CAROUSEL_ITEM_WIDTH = 275;
 
-export const MOBS: CharacterData[] = [
+export const CHARACTERS: CharacterData[] = [
   {
     pictureUrl: "/aloy.jpg",
     name: "Aloy",

@@ -8,7 +8,7 @@ export interface CharacterData {
   characterType: CharacterType;
 }
 
-export interface MobCarouselViewProps {
+export interface CharacterCarouselViewProps {
   characters: CharacterData[];
   activeIndex: number;
   setActiveIndex: (index: number) => void;

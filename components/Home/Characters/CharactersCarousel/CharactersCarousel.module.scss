@@ -1,0 +1,45 @@
+@keyframes appear {
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.itemWrapper {
+  padding: 100px 0px 150px 0px;
+  transition: transform 0.5s;
+  li {
+    align-self: baseline;
+  }
+}
+
+.leftSide,
+.rightSide {
+  transform: scale(80%);
+  position: absolute;
+}
+
+.leftSide {
+  left: 0;
+  right: 0;
+}
+
+.rightSide {
+  right: 0;
+  left: 0;
+}
+
+.close {
+  opacity: 1;
+}
+
+.normal {
+  opacity: 0;
+}
+// .sizeTwo {
+//   transform: scaleY(95%) translateY(2%);
+// }
+
+// .sizeThree {
+//   transform: scaleY(90%) translateY(3.8%);
+// }
